@@ -1,0 +1,63 @@
+@extends('layout.presensi')
+
+@section('content')
+    <div class="pageHeaderRow">
+        <h2>Data Siswa</h2>
+        <a class="btnPrimary" href="{{ route('admin.siswa.create') }}">
+            <ion-icon name="add-outline"></ion-icon>
+            Tambah
+        </a>
+    </div>
+
+    @if (session('success'))
+        <div class="errorList" style="border-color: rgba(22,163,74,0.25); background: rgba(22,163,74,0.10); color:#15803d;">
+            {{ session('success') }}
+        </div>
+    @endif
+
+    <div class="siswaGrid">
+        @forelse($siswas as $siswa)
+            <div class="siswaCard">
+                <div class="siswaTop">
+                    <div style="display:flex;align-items:center;gap:12px;min-width:0;">
+                        @php
+                            $initial = strtoupper(substr((string) ($siswa->nama_siswa ?? ''), 0, 1));
+                        @endphp
+                        <div class="activityAvatar" style="background:#ffedd5;">
+                            {{ $initial }}
+                        </div>
+                        <div style="min-width:0;">
+                            <div class="siswaName">{{ $siswa->nama_siswa }}</div>
+                            <div class="siswaMeta">
+                                NIS: {{ $siswa->nis }} • Kelas: {{ $siswa->kelas->nama_kelas ?? '-' }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="siswaActions">
+                    <a class="smallBtn edit" href="{{ route('admin.siswa.edit', $siswa) }}">
+                        <ion-icon name="create-outline"></ion-icon>
+                        Edit
+                    </a>
+
+                    <form method="POST" action="{{ route('admin.siswa.destroy', $siswa) }}" onsubmit="return confirm('Yakin hapus siswa ini?')">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="smallBtn delete" style="cursor:pointer;border:1px solid rgba(239,68,68,0.22);background:rgba(239,68,68,0.08);">
+                            <ion-icon name="trash-outline"></ion-icon>
+                            Hapus
+                        </button>
+                    </form>
+                </div>
+            </div>
+        @empty
+            <div class="emptyState">Belum ada data siswa.</div>
+        @endforelse
+    </div>
+
+    <div style="padding:0 16px 30px;">
+        {{ $siswas->links() }}
+    </div>
+@endsection
+
