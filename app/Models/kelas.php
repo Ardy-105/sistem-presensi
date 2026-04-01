@@ -13,6 +13,6 @@ class kelas extends Model
 
     public function siswas()
     {
-        return $this->hasMany(Siswa::class);
+        return $this->hasMany(Siswa::class, 'kelas');
     }
 }

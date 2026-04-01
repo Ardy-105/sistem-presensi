@@ -1,4 +1,4 @@
-@extends('layout.presensi')
+@extends('layout.admin')
 
 @section('content')
     <div class="pageHeaderRow">
@@ -22,7 +22,7 @@
 
         <div style="margin-top:14px;">
             <div class="fieldLabel">Kelas</div>
-            <div style="font-weight:900;">{{ $siswa->kelas->nama_kelas ?? '-' }}</div>
+            <div style="font-weight:900;">{{ $siswa->relKelas->nama_kelas ?? '-' }}</div>
 
             <div class="fieldLabel" style="margin-top:12px;">Alamat</div>
             <div style="color:#334155;font-weight:900;">{{ $siswa->alamat ?? '-' }}</div>

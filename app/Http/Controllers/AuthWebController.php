@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 
 class AuthWebController extends Controller
 {
@@ -14,10 +15,15 @@ class AuthWebController extends Controller
             'password' => ['required', 'string'],
         ]);
 
-        $attempt = Auth::attempt([
-            'nik' => $credentials['username'],
-            'password' => $credentials['password'],
-        ], $request->boolean('remember'));
+        $attempt =
+            Auth::attempt([
+                'nik' => $credentials['username'],
+                'password' => $credentials['password'],
+            ], $request->boolean('remember')) ||
+            Auth::attempt([
+                'email' => $credentials['username'],
+                'password' => $credentials['password'],
+            ], $request->boolean('remember'));
 
         if (!$attempt) {
             return back()
@@ -27,7 +33,15 @@ class AuthWebController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard'));
+        if (Auth::user()?->role !== 'admin') {
+            Auth::logout();
+            throw ValidationException::withMessages([
+                'username' => 'Akun ini tidak memiliki akses ke halaman admin.',
+            ]);
+        }
+
+        return redirect()->intended(route('admin.dashboard'))
+            ->with('success', 'Login berhasil. Selamat datang!');
     }
 
     public function logout(Request $request)

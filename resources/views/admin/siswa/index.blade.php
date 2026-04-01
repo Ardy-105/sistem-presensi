@@ -1,12 +1,9 @@
-@extends('layout.presensi')
+@extends('layout.admin')
 
 @section('content')
+
     <div class="pageHeaderRow">
         <h2>Data Siswa</h2>
-        <a class="btnPrimary" href="{{ route('admin.siswa.create') }}">
-            <ion-icon name="add-outline"></ion-icon>
-            Tambah
-        </a>
     </div>
 
     @if (session('success'))
@@ -29,7 +26,7 @@
                         <div style="min-width:0;">
                             <div class="siswaName">{{ $siswa->nama_siswa }}</div>
                             <div class="siswaMeta">
-                                NIS: {{ $siswa->nis }} • Kelas: {{ $siswa->kelas->nama_kelas ?? '-' }}
+                                NIS: {{ $siswa->nis }} • Kelas: {{ $siswa->relKelas->nama_kelas ?? '-' }}
                             </div>
                         </div>
                     </div>
@@ -59,5 +56,9 @@
     <div style="padding:0 16px 30px;">
         {{ $siswas->links() }}
     </div>
+
+    <a href="{{ route('admin.siswa.create') }}" class="fabAdd" aria-label="Tambah Siswa">
+        <ion-icon name="add-outline"></ion-icon>
+    </a>
 @endsection
 

@@ -165,6 +165,18 @@
             font-size: 13px;
         }
 
+        .login-alert-danger {
+            border-color: #fecaca;
+            background: #fef2f2;
+            color: #b91c1c;
+        }
+
+        .login-alert-success {
+            border-color: #bbf7d0;
+            background: #f0fdf4;
+            color: #166534;
+        }
+
         @media (max-width: 480px) {
             .login-card {
                 max-width: 360px;
@@ -200,12 +212,21 @@
                     Homeschooling Bandung
                 </div>
 
-                @php
-                    $messagewarning = Session::get('warning');
-                @endphp
-                @if ($messagewarning)
+                @if (session('warning'))
                     <div class="login-alert">
-                        {{ $messagewarning }}
+                        {{ session('warning') }}
+                    </div>
+                @endif
+
+                @if ($errors->any())
+                    <div class="login-alert login-alert-danger">
+                        {{ $errors->first() }}
+                    </div>
+                @endif
+
+                @if (session('success'))
+                    <div class="login-alert login-alert-success">
+                        {{ session('success') }}
                     </div>
                 @endif
 
@@ -220,6 +241,7 @@
                             id="username"
                             class="login-input"
                             placeholder="Masukkan username atau NIK"
+                            value="{{ old('username') }}"
                             autofocus
                         >
                     </div>

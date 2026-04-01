@@ -12,7 +12,7 @@ class SiswaController extends Controller
 {
     public function index()
     {
-        $siswas = Siswa::with('kelas')
+        $siswas = Siswa::with('relKelas')
             ->orderByDesc('id')
             ->paginate(10);
 
@@ -33,7 +33,7 @@ class SiswaController extends Controller
             'alamat' => ['nullable', 'string', 'max:255'],
             'no_hp' => ['required', 'string', 'max:30'],
             'nama_wali' => ['required', 'string', 'max:120'],
-            'kelas_id' => ['required', 'exists:kelas,id'],
+            'kelas' => ['required', 'exists:kelas,id'],
         ]);
 
         Siswa::create($validated);
@@ -45,14 +45,14 @@ class SiswaController extends Controller
 
     public function show(Siswa $siswa)
     {
-        $siswa->load('kelas');
+        $siswa->load('relKelas');
         return view('admin.siswa.show', compact('siswa'));
     }
 
     public function edit(Siswa $siswa)
     {
         $kelas = Kelas::orderBy('nama_kelas')->get();
-        $siswa->load('kelas');
+        $siswa->load('relKelas');
         return view('admin.siswa.edit', compact('siswa', 'kelas'));
     }
 
@@ -69,7 +69,7 @@ class SiswaController extends Controller
             'alamat' => ['nullable', 'string', 'max:255'],
             'no_hp' => ['required', 'string', 'max:30'],
             'nama_wali' => ['required', 'string', 'max:120'],
-            'kelas_id' => ['required', 'exists:kelas,id'],
+            'kelas' => ['required', 'exists:kelas,id'],
         ]);
 
         $siswa->update($validated);

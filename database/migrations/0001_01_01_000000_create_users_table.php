@@ -14,8 +14,12 @@ return new class extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('nik', 20)->unique();
+            $table->string('nama_lengkap');
             $table->string('password');
             $table->enum('role', ['admin', 'tutor', 'kepala_sekolah']);
+            $table->string('no_hp')->nullable();
+            $table->string('foto')->nullable();
+            $table->boolean('is_active')->default(true);
             $table->rememberToken();
             $table->timestamps();
         });

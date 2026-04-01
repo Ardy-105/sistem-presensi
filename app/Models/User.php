@@ -6,6 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Schema;
 
 class User extends Authenticatable
 {
@@ -20,9 +21,13 @@ class User extends Authenticatable
     protected $fillable = [
         'nik',
         'name',
+        'nama_lengkap',
         'email',
         'password',
         'role',
+        'no_hp',
+        'foto',
+        'is_active',
 
     ];
 
@@ -62,5 +67,15 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function getIsActiveAttribute($value)
+    {
+        // Jika DB lama belum punya kolom is_active, anggap semua aktif.
+        if (!Schema::hasColumn('users', 'is_active')) {
+            return true;
+        }
+
+        return (bool) $value;
     }
 }

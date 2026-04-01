@@ -1,4 +1,4 @@
-@extends('layout.presensi')
+@extends('layout.admin')
 
 @section('content')
     <div class="pageHeaderRow">
@@ -51,10 +51,16 @@
 
             <div class="formRow">
                 <div class="fieldLabel">Kelas</div>
-                <select class="input" name="kelas_id" required>
+                @if ($kelas->isEmpty())
+                    <div class="input" style="border: 1px solid #ccc; background:#fff7e6; color:#8a6d3b;">
+                        Belum ada data kelas.
+                        <a href="{{ route('admin.kelas.create') }}" style="font-weight:900;color:#1d4ed8;text-decoration:underline;">Tambah kelas sekarang</a>.
+                    </div>
+                @endif
+                <select class="input" name="kelas">
                     <option value="">-- Pilih Kelas --</option>
                     @foreach ($kelas as $k)
-                        <option value="{{ $k->id }}" {{ (int) old('kelas_id', $siswa->kelas_id) === (int) $k->id ? 'selected' : '' }}>
+                        <option value="{{ $k->id }}" {{ (int) old('kelas', $siswa->kelas) === (int) $k->id ? 'selected' : '' }}>
                             {{ $k->nama_kelas }}
                         </option>
                     @endforeach

@@ -477,6 +477,26 @@
             font-size: 12px;
         }
 
+        .flashAlert {
+            margin: 12px 16px 0;
+            padding: 10px 12px;
+            border-radius: 14px;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .flashAlert.success {
+            border: 1px solid rgba(22, 163, 74, 0.25);
+            background: rgba(22, 163, 74, 0.10);
+            color: #166534;
+        }
+
+        .flashAlert.warning {
+            border: 1px solid rgba(245, 158, 11, 0.25);
+            background: rgba(245, 158, 11, 0.12);
+            color: #92400e;
+        }
+
         .siswaGrid {
             padding: 0 16px 10px;
             display: grid;
@@ -544,6 +564,12 @@
 </head>
 <body>
     <div id="appCapsule">
+        @if (session('success'))
+            <div class="flashAlert success">{{ session('success') }}</div>
+        @endif
+        @if (session('warning'))
+            <div class="flashAlert warning">{{ session('warning') }}</div>
+        @endif
         @yield('content')
     </div>
 

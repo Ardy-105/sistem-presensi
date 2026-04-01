@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\KaryawanController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthWebController;
 use App\Http\Controllers\DashboardController;
@@ -21,12 +22,14 @@ Route::post('/login', [AuthWebController::class, 'process'])
     ->name('login.process');
 
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'index']);
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::resource('siswa', SiswaController::class);
     Route::resource('kelas', KelasController::class);
     Route::resource('jadwal', JadwalController::class);
-    Route::resource('tutor', TutorController::class);
+    Route::resource('karyawan', KaryawanController::class);
+
+Route::patch('karyawan/{id}/status', [KaryawanController::class, 'status'])->name('karyawan.status');
 
     Route::get('presensi', [PresensiController::class, 'index']);
 });
