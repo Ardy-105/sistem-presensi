@@ -11,6 +11,7 @@ class Jadwal extends Model
     [
         'tutor_id',
         'siswa_id',
+        'mata_pelajaran',
         'tanggal',
         'jam_mulai',
         'jam_selesai'

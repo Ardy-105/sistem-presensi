@@ -351,37 +351,31 @@
             max-width: 430px;
             background: #ffffff;
             border-top: 1px solid rgba(229, 231, 235, 0.9);
-            padding: 10px 10px 14px;
+            padding: 10px 14px 14px;
             display: flex;
-            justify-content: space-around;
-            gap: 10px;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
         }
 
         .appBottomMenu a {
             text-decoration: none;
             color: #64748b;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            font-weight: 900;
-            font-size: 11px;
-            width: 20%;
+            display: grid;
+            place-items: center;
+            width: 52px;
+            height: 44px;
+            border-radius: 14px;
         }
 
         .appBottomMenu a.active {
             color: var(--blue2);
+            background: rgba(11, 94, 215, 0.10);
+            border: 1px solid rgba(11, 94, 215, 0.16);
         }
 
-        .fabAction {
-            width: 44px;
-            height: 44px;
-            border-radius: 16px;
-            display: grid;
-            place-items: center;
-            background: rgba(11, 94, 215, 0.10);
-            border: 1px solid rgba(11, 94, 215, 0.18);
-            color: var(--blue2);
+        .appBottomMenu ion-icon {
+            font-size: 24px;
         }
 
         /* Form utilities for CRUD pages */
@@ -574,26 +568,31 @@
     </div>
 
     <div class="appBottomMenu">
-        <a href="#" aria-label="Today">
-            <ion-icon name="calendar-outline"></ion-icon>
-            <span>Today</span>
+        @php
+            $leftHref = \Illuminate\Support\Facades\Route::has('tutor.presensi')
+                ? route('tutor.presensi')
+                : '#';
+            $centerHref = \Illuminate\Support\Facades\Route::has('tutor.dashboard')
+                ? route('tutor.dashboard')
+                : '#';
+            $rightHref = \Illuminate\Support\Facades\Route::has('tutor.jadwal')
+                ? route('tutor.jadwal')
+                : '#';
+            $isCenter = request()->routeIs('tutor.dashboard');
+            $isLeft = request()->routeIs('tutor.presensi*');
+            $isRight = request()->routeIs('tutor.jadwal*');
+        @endphp
+
+        <a href="{{ $leftHref }}" class="{{ $isLeft ? 'active' : '' }}" aria-label="Presensi">
+            <ion-icon name="{{ $isLeft ? 'time' : 'time-outline' }}"></ion-icon>
         </a>
-        <a class="active" href="{{ route('admin.dashboard') }}" aria-label="Calendar">
-            <ion-icon name="calendar-outline"></ion-icon>
-            <span>Calendar</span>
+
+        <a href="{{ $centerHref }}" class="{{ $isCenter ? 'active' : '' }}" aria-label="Dashboard">
+            <ion-icon name="{{ $isCenter ? 'grid' : 'grid-outline' }}"></ion-icon>
         </a>
-        <a href="{{ route('admin.siswa.create') }}" aria-label="Tambah">
-            <div class="fabAction">
-                <ion-icon name="add-outline"></ion-icon>
-            </div>
-        </a>
-        <a href="#" aria-label="Docs">
-            <ion-icon name="document-text-outline"></ion-icon>
-            <span>Docs</span>
-        </a>
-        <a href="#" aria-label="Profile">
-            <ion-icon name="people-outline"></ion-icon>
-            <span>Profile</span>
+
+        <a href="{{ $rightHref }}" class="{{ $isRight ? 'active' : '' }}" aria-label="Jadwal">
+            <ion-icon name="{{ $isRight ? 'calendar' : 'calendar-outline' }}"></ion-icon>
         </a>
     </div>
 

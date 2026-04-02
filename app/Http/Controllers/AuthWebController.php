@@ -33,15 +33,22 @@ class AuthWebController extends Controller
 
         $request->session()->regenerate();
 
-        if (Auth::user()?->role !== 'admin') {
-            Auth::logout();
-            throw ValidationException::withMessages([
-                'username' => 'Akun ini tidak memiliki akses ke halaman admin.',
-            ]);
+        $role = Auth::user()?->role;
+
+        if ($role === 'admin') {
+            return redirect()->intended(route('admin.dashboard'))
+                ->with('success', 'Login berhasil. Selamat datang!');
         }
 
-        return redirect()->intended(route('admin.dashboard'))
-            ->with('success', 'Login berhasil. Selamat datang!');
+        if ($role === 'tutor') {
+            return redirect()->intended(route('tutor.dashboard'))
+                ->with('success', 'Login berhasil. Selamat datang!');
+        }
+
+        Auth::logout();
+        throw ValidationException::withMessages([
+            'username' => 'Akun ini tidak memiliki akses.',
+        ]);
     }
 
     public function logout(Request $request)

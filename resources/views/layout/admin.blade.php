@@ -376,16 +376,16 @@
             <ion-icon name="{{ request()->routeIs('admin.siswa.*') ? 'school' : 'school-outline' }}"></ion-icon>
         </a>
 
-        <a href="#"
+        <a href="{{ route('admin.jadwal.index') }}"
            class="{{ request()->routeIs('admin.jadwal.*') ? 'active' : '' }}"
            aria-label="Jadwal">
             <ion-icon name="{{ request()->routeIs('admin.jadwal.*') ? 'calendar' : 'calendar-outline' }}"></ion-icon>
         </a>
 
-        <a href="#"
-           class="{{ request()->routeIs('admin.statistik.*') ? 'active' : '' }}"
-           aria-label="Statistik">
-            <ion-icon name="{{ request()->routeIs('admin.statistik.*') ? 'bar-chart' : 'bar-chart-outline' }}"></ion-icon>
+        <a href="{{ route('admin.laporan.index') }}"
+           class="{{ request()->routeIs('admin.laporan.*') ? 'active' : '' }}"
+           aria-label="Laporan">
+            <ion-icon name="{{ request()->routeIs('admin.laporan.*') ? 'bar-chart' : 'bar-chart-outline' }}"></ion-icon>
         </a>
     </nav>
 
