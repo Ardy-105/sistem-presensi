@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Jadwal;
 use App\Models\Tutor;
 use App\Models\Siswa;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Carbon\Carbon;
 
 class JadwalController extends Controller
@@ -37,7 +39,9 @@ class JadwalController extends Controller
 
     public function create()
     {
-        $tutors = Tutor::orderBy('nama_lengkap')->get();
+        $this->syncTutorsFromUsers();
+
+        $tutors = Tutor::with('user')->get()->sortBy(fn($tutor) => $tutor->user?->nama_lengkap ?? $tutor->id);
         $siswas = Siswa::orderBy('nama_siswa')->get();
         return view('admin.jadwal.create', compact('tutors', 'siswas'));
     }
@@ -51,6 +55,7 @@ class JadwalController extends Controller
             'tanggal'     => 'required|date',
             'jam_mulai'   => 'required',
             'jam_selesai' => 'required|after:jam_mulai',
+            'lokasi_tipe' => ['required', Rule::in(['sekolah', 'rumah_siswa'])],
         ], [
             'tutor_id.required'    => 'Tutor wajib dipilih.',
             'siswa_id.required'    => 'Siswa wajib dipilih.',
@@ -59,9 +64,10 @@ class JadwalController extends Controller
             'jam_mulai.required'   => 'Jam mulai wajib diisi.',
             'jam_selesai.required' => 'Jam selesai wajib diisi.',
             'jam_selesai.after'    => 'Jam selesai harus setelah jam mulai.',
+            'lokasi_tipe.required' => 'Lokasi mengajar wajib dipilih.',
         ]);
 
-        Jadwal::create($request->only(['tutor_id', 'siswa_id', 'mata_pelajaran', 'tanggal', 'jam_mulai', 'jam_selesai']));
+        Jadwal::create($request->only(['tutor_id', 'siswa_id', 'mata_pelajaran', 'tanggal', 'jam_mulai', 'jam_selesai', 'lokasi_tipe']));
 
         return redirect()->route('admin.jadwal.index', ['tanggal' => $request->tanggal])
             ->with('success', 'Jadwal berhasil ditambahkan.');
@@ -69,7 +75,9 @@ class JadwalController extends Controller
 
     public function edit(Jadwal $jadwal)
     {
-        $tutors = Tutor::orderBy('nama_lengkap')->get();
+        $this->syncTutorsFromUsers();
+
+        $tutors = Tutor::with('user')->get()->sortBy(fn($tutor) => $tutor->user?->nama_lengkap ?? $tutor->id);
         $siswas = Siswa::orderBy('nama_siswa')->get();
         return view('admin.jadwal.edit', compact('jadwal', 'tutors', 'siswas'));
     }
@@ -83,9 +91,10 @@ class JadwalController extends Controller
             'tanggal'     => 'required|date',
             'jam_mulai'   => 'required',
             'jam_selesai' => 'required|after:jam_mulai',
+            'lokasi_tipe' => ['required', Rule::in(['sekolah', 'rumah_siswa'])],
         ]);
 
-        $jadwal->update($request->only(['tutor_id', 'siswa_id', 'mata_pelajaran', 'tanggal', 'jam_mulai', 'jam_selesai']));
+        $jadwal->update($request->only(['tutor_id', 'siswa_id', 'mata_pelajaran', 'tanggal', 'jam_mulai', 'jam_selesai', 'lokasi_tipe']));
 
         return redirect()->route('admin.jadwal.index', ['tanggal' => $jadwal->tanggal])
             ->with('success', 'Jadwal berhasil diperbarui.');
@@ -98,5 +107,24 @@ class JadwalController extends Controller
 
         return redirect()->route('admin.jadwal.index', ['tanggal' => $tanggal])
             ->with('success', 'Jadwal berhasil dihapus.');
+    }
+
+    private function syncTutorsFromUsers(): void
+    {
+        $tutorUsers = User::where('role', 'tutor')->get();
+
+        foreach ($tutorUsers as $user) {
+            Tutor::firstOrCreate(
+                ['user_id' => $user->id],
+                [
+                    'nik' => $user->nik,
+                    'nama_lengkap' => $user->nama_lengkap,
+                    'email' => $user->email ?? 'user'.$user->id.'@local.test',
+                    'alamat' => null,
+                    'no_hp' => $user->no_hp,
+                    'foto' => $user->foto ?? null,
+                ]
+            );
+        }
     }
 }

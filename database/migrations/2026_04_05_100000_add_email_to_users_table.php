@@ -6,6 +6,9 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /**
+     * Database lama yang sudah pernah di-migrate sebelum kolom email ada di users.
+     */
     public function up(): void
     {
         if (!Schema::hasTable('users')) {
@@ -13,12 +16,8 @@ return new class extends Migration
         }
 
         Schema::table('users', function (Blueprint $table) {
-            if (!Schema::hasColumn('users', 'nik')) {
-                $table->string('nik', 20)->nullable()->unique()->after('id');
-            }
-
-            if (!Schema::hasColumn('users', 'role')) {
-                $table->enum('role', ['admin', 'tutor', 'kepala_sekolah'])->nullable()->after('password');
+            if (!Schema::hasColumn('users', 'email')) {
+                $table->string('email')->nullable()->unique()->after('nama_lengkap');
             }
         });
     }
@@ -30,15 +29,10 @@ return new class extends Migration
         }
 
         Schema::table('users', function (Blueprint $table) {
-            if (Schema::hasColumn('users', 'role')) {
-                $table->dropColumn('role');
-            }
-
-            if (Schema::hasColumn('users', 'nik')) {
-                $table->dropUnique(['nik']);
-                $table->dropColumn('nik');
+            if (Schema::hasColumn('users', 'email')) {
+                $table->dropUnique(['email']);
+                $table->dropColumn('email');
             }
         });
     }
 };
-

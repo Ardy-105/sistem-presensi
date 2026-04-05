@@ -137,6 +137,26 @@
         border: 1px solid rgba(22,163,74,0.20);
         flex-shrink:0;
     }
+    .pillSmall.pillOk {
+        background: rgba(22,163,74,0.14);
+        color:#15803d;
+        border-color: rgba(22,163,74,0.20);
+    }
+    .pillSmall.pillPending {
+        background: rgba(245,158,11,0.14);
+        color:#b45309;
+        border-color: rgba(245,158,11,0.25);
+    }
+    .pillSmall.pillMuted {
+        background: rgba(100,116,139,0.12);
+        color:#475569;
+        border-color: rgba(100,116,139,0.2);
+    }
+    .pillSmall.pillAlpha {
+        background: rgba(239,68,68,0.12);
+        color:#b91c1c;
+        border-color: rgba(239,68,68,0.22);
+    }
 
     .agendaWrap { padding: 0 14px 110px; display:flex; flex-direction:column; gap:10px; }
     .agendaItem {
@@ -203,55 +223,91 @@
 
 <div class="rowHeader">
     <div class="rowHeaderTitle">RIWAYAT TERBARU</div>
-    <a href="#" class="rowHeaderLink">Lihat Semua</a>
+    @if(Route::has('tutor.riwayat'))
+        <a href="{{ route('tutor.riwayat') }}" class="rowHeaderLink">Lihat Semua</a>
+    @endif
 </div>
 
 <div class="recentWrap">
-    <div class="recentItem">
-        <div class="recentLeft">
-            <div class="recentCheck">
-                <ion-icon name="checkmark" style="font-size:14px;"></ion-icon>
+    @forelse($recentPresensi as $p)
+        @php
+            $siswaLabel = $p->siswa->nama_siswa ?? ('Siswa #' . $p->siswa_id);
+            $hari = \Carbon\Carbon::parse($p->tgl_presensi)->locale('id')->translatedFormat('l, d F Y');
+            $jamMulai = $p->jam_mulai ? substr((string) $p->jam_mulai, 0, 5) : '—';
+            $jamSelesai = $p->jam_selesai ? substr((string) $p->jam_selesai, 0, 5) : '—';
+            if ($p->foto_mulai && $p->foto_selesai) {
+                $timeLine = $jamMulai . ' – ' . $jamSelesai . ' • ' . $siswaLabel;
+            } elseif ($p->foto_mulai) {
+                $timeLine = 'Masuk • ' . $jamMulai . ' • ' . $siswaLabel;
+            } else {
+                $timeLine = $siswaLabel;
+            }
+            $st = strtoupper((string) ($p->status ?? 'pending'));
+            $pillClass = 'pillSmall';
+            if ($st === 'HADIR') {
+                $pillClass .= ' pillOk';
+            } elseif ($st === 'ALPHA') {
+                $pillClass .= ' pillAlpha';
+            } elseif ($st === 'PENDING' || $st === '') {
+                $pillClass .= ' pillPending';
+                $st = 'PENDING';
+            } else {
+                $pillClass .= ' pillMuted';
+            }
+        @endphp
+        <div class="recentItem">
+            <div class="recentLeft">
+                <div class="recentCheck">
+                    <ion-icon name="{{ $p->foto_mulai ? 'checkmark' : 'ellipse-outline' }}" style="font-size:14px;"></ion-icon>
+                </div>
+                <div class="recentMeta">
+                    <div class="recentDay">{{ $hari }}</div>
+                    <div class="recentTime">{{ $timeLine }}</div>
+                </div>
             </div>
-            <div class="recentMeta">
-                <div class="recentDay">Senin, 09 Februari</div>
-                <div class="recentTime">08.00</div>
-            </div>
+            <div class="{{ $pillClass }}">{{ $st }}</div>
         </div>
-        <div class="pillSmall">HADIR</div>
-    </div>
-    <div class="recentItem">
-        <div class="recentLeft">
-            <div class="recentCheck">
-                <ion-icon name="checkmark" style="font-size:14px;"></ion-icon>
-            </div>
-            <div class="recentMeta">
-                <div class="recentDay">Senin, 09 Februari</div>
-                <div class="recentTime">08.00</div>
-            </div>
+    @empty
+        <div class="recentItem" style="justify-content:center;color:#64748b;font-weight:800;font-size:12px;">
+            Belum ada riwayat absensi. Absen lewat menu Presensi.
         </div>
-        <div class="pillSmall">HADIR</div>
-    </div>
+    @endforelse
 </div>
 
 <div class="rowHeader">
-    <div class="rowHeaderTitle">AGENDA TERDEKAT</div>
+    <div class="rowHeaderTitle">JADWAL DARI ADMIN</div>
+    @if(Route::has('tutor.jadwal'))
+        <a href="{{ route('tutor.jadwal') }}" class="rowHeaderLink">Lihat Semua</a>
+    @endif
 </div>
 
 <div class="agendaWrap">
-    <div class="agendaItem">
-        <div class="agendaBar"></div>
-        <div>
-            <div class="agendaTitle">Ujian Tengah Semester</div>
-            <div class="agendaSub">20 Januari 2026 • 08:00 WIB</div>
+    @forelse($upcomingJadwal as $j)
+        @php
+            $tgl = \Carbon\Carbon::parse($j->tanggal)->locale('id')->translatedFormat('d F Y');
+            $jm = substr((string) $j->jam_mulai, 0, 5);
+            $js = substr((string) $j->jam_selesai, 0, 5);
+            $mapel = $j->mata_pelajaran ?? 'Mata pelajaran';
+            $namaSiswa = $j->siswa->nama_siswa ?? ('Siswa #' . $j->siswa_id);
+        @endphp
+        <div class="agendaItem">
+            <div class="agendaBar"></div>
+            <div>
+                <div class="agendaTitle">{{ $mapel }} • {{ $namaSiswa }}</div>
+                <div class="agendaSub">{{ $tgl }} • {{ $jm }}–{{ $js }} WIB</div>
+                <div class="agendaSub" style="margin-top:6px;">
+                    {{ $j->lokasiRingkasan() }}
+                    @if($mapUrl = $j->lokasiPetaUrl())
+                        <a href="{{ $mapUrl }}" target="_blank" rel="noopener" style="display:inline-block;margin-top:4px;color:#2563eb;font-weight:900;">Peta</a>
+                    @endif
+                </div>
+            </div>
         </div>
-    </div>
-    <div class="agendaItem">
-        <div class="agendaBar"></div>
-        <div>
-            <div class="agendaTitle">Ujian Tengah Semester</div>
-            <div class="agendaSub">20 Januari 2026 • 08:00 WIB</div>
+    @empty
+        <div class="agendaItem" style="justify-content:center;color:#64748b;font-weight:800;font-size:12px;">
+            Tidak ada jadwal mendatang. Admin akan menambahkan jadwal mengajar Anda.
         </div>
-    </div>
+    @endforelse
 </div>
 
 <script>

@@ -15,12 +15,12 @@ protected $table = 'siswas';
         'alamat',
         'no_hp',
         'nama_wali',
-        'kelas'
+        'kelas_id'
     ];
 
     public function relKelas()
     {
-        return $this->belongsTo(kelas::class, 'kelas');
+        return $this->belongsTo(kelas::class, 'kelas_id');
     }
 
     public function jadwals()

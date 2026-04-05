@@ -33,7 +33,7 @@ class SiswaController extends Controller
             'alamat' => ['nullable', 'string', 'max:255'],
             'no_hp' => ['required', 'string', 'max:30'],
             'nama_wali' => ['required', 'string', 'max:120'],
-            'kelas' => ['required', 'exists:kelas,id'],
+            'kelas_id' => ['required', 'exists:kelas,id'],
         ]);
 
         Siswa::create($validated);
@@ -69,7 +69,7 @@ class SiswaController extends Controller
             'alamat' => ['nullable', 'string', 'max:255'],
             'no_hp' => ['required', 'string', 'max:30'],
             'nama_wali' => ['required', 'string', 'max:120'],
-            'kelas' => ['required', 'exists:kelas,id'],
+            'kelas_id' => ['required', 'exists:kelas,id'],
         ]);
 
         $siswa->update($validated);

@@ -6,24 +6,21 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::table('jadwals', function (Blueprint $table) {
-            $table->foreignId('siswa_id')->constrained()->onDelete('cascade');
+            if (!Schema::hasColumn('jadwals', 'lokasi_tipe')) {
+                $table->string('lokasi_tipe', 20)->default('sekolah')->after('jam_selesai');
+            }
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::table('jadwals', function (Blueprint $table) {
-            $table->dropForeign(['siswa_id']);
-            $table->dropColumn('siswa_id');
+            if (Schema::hasColumn('jadwals', 'lokasi_tipe')) {
+                $table->dropColumn('lokasi_tipe');
+            }
         });
     }
 };

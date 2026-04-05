@@ -3,86 +3,17 @@
 namespace App\Http\Controllers\Tutor;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Tutor\Concerns\ResolvesTutor;
 use App\Models\Jadwal;
 use App\Models\Presensi;
-use App\Models\Tutor;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
 class PresensiFotoController extends Controller
 {
-    private function resolveTutor(): ?Tutor
-    {
-        $user = auth()->user();
-        if (!$user) {
-            return null;
-        }
-
-        $tutor = Tutor::where('user_id', $user->id)->first();
-        if ($tutor) {
-            return $tutor;
-        }
-
-        // Coba hubungkan data tutor berdasarkan nik / email
-        $nik = (string) ($user->nik ?? '');
-        $email = (string) ($user->email ?? '');
-
-        $hasTutorNik = Schema::hasColumn('tutors', 'nik');
-        $hasTutorEmail = Schema::hasColumn('tutors', 'email');
-
-        if (($hasTutorNik && $nik !== '') || ($hasTutorEmail && $email !== '')) {
-            $tutor = Tutor::query()
-                ->where(function ($q) use ($nik, $email, $hasTutorNik, $hasTutorEmail) {
-                    if ($hasTutorNik && $nik !== '') {
-                        $q->where('nik', $nik);
-                    }
-                    if ($hasTutorEmail && $email !== '') {
-                        $q->orWhere('email', $email);
-                    }
-                })
-                ->first();
-        } else {
-            $tutor = null;
-        }
-
-        if ($tutor) {
-            $tutor->user_id = $user->id;
-            $tutor->save();
-            return $tutor;
-        }
-
-        // Jika belum ada, buat data tutor dari user (agar tutor bisa langsung presensi)
-        if ($nik === '' && $email === '') {
-            return null;
-        }
-
-        $name = (string) (($user->nama_lengkap ?? $user->name) ?? 'Tutor');
-        if ($email === '') {
-            $email = strtolower(preg_replace('/\s+/', '', $nik)) . '@local.test';
-        }
-
-        $payload = [
-            'user_id' => $user->id,
-            'nama_lengkap' => $name,
-            'email' => $email,
-            'no_hp' => $user->no_hp ?? null,
-            'foto' => $user->foto ?? null,
-        ];
-
-        // Hanya isi kolom yang ada di tabel tutors
-        if ($hasTutorNik) {
-            $payload['nik'] = $nik !== '' ? $nik : ('TUTOR-' . $user->id);
-        }
-
-        if (!$hasTutorEmail) {
-            unset($payload['email']);
-        }
-
-        return Tutor::create($payload);
-    }
+    use ResolvesTutor;
 
     public function index(Request $request)
     {
@@ -151,14 +82,17 @@ class PresensiFotoController extends Controller
             return back()->with('warning', 'Tidak ada jadwal untuk siswa tersebut hari ini.');
         }
 
-        $start = Carbon::parse($today . ' ' . $jadwal->jam_mulai, 'Asia/Jakarta')->subMinutes(30);
-        $end = Carbon::parse($today . ' ' . $jadwal->jam_selesai, 'Asia/Jakarta')->addMinutes(60);
-        if ($now->lt($start) || $now->gt($end)) {
-            return back()->with('warning', 'Presensi hanya bisa dilakukan sesuai rentang jadwal (dengan toleransi).');
+        $tz = 'Asia/Jakarta';
+        $jamMulaiJadwal = Carbon::parse($today.' '.$jadwal->jam_mulai, $tz);
+        $jamSelesaiJadwal = Carbon::parse($today.' '.$jadwal->jam_selesai, $tz);
+        if ($jamSelesaiJadwal->lte($jamMulaiJadwal)) {
+            $jamSelesaiJadwal->addDay();
         }
 
+        $bukaAbsenMasuk = $jamMulaiJadwal->copy()->subMinutes(30);
+        $batasAkhirSesi = $jamSelesaiJadwal->copy()->addMinutes(60);
+
         $dir = 'presensi/' . $tutor->id . '/' . $today;
-        $path = $request->file('foto')->store($dir, 'public');
 
         $hasPresensiTutorId = Schema::hasColumn('presensis', 'tutor_id');
         $presensiLookup = Presensi::query()
@@ -174,6 +108,17 @@ class PresensiFotoController extends Controller
                 return back()->with('warning', 'Presensi masuk sudah tercatat untuk siswa ini.');
             }
 
+            if ($now->lt($bukaAbsenMasuk)) {
+                return back()->with('warning', 'Belum waktunya absen masuk. Absen masuk dibuka 30 menit sebelum jam mulai mengajar ('.$jamMulaiJadwal->format('H:i').' WIB).');
+            }
+
+            if ($now->gt($batasAkhirSesi)) {
+                return back()->with('warning', 'Waktu presensi masuk untuk jadwal ini sudah lewat.');
+            }
+
+            $terlambat = $now->gt($jamMulaiJadwal);
+            $path = $request->file('foto')->store($dir, 'public');
+
             if (!$presensi) {
                 $presensi = new Presensi();
                 if ($hasPresensiTutorId) {
@@ -187,35 +132,48 @@ class PresensiFotoController extends Controller
             $presensi->jam_selesai = $jadwal->jam_selesai;
             $presensi->foto_mulai = $path;
             $presensi->lokasi_mulai = $validated['lokasi'] ?? null;
-            $presensi->status = 'pending';
+            $presensi->status = $terlambat ? 'alpha' : 'pending';
             $presensi->save();
+
+            $msg = $terlambat
+                ? 'Presensi masuk tercatat. Status Alpha (terlambat — melewati jam mulai '.$jamMulaiJadwal->format('H:i').' WIB).'
+                : 'Presensi masuk berhasil disimpan.';
 
             return redirect()
                 ->route('tutor.presensi')
-                ->with('success', 'Presensi masuk berhasil disimpan.');
+                ->with('success', $msg);
         }
 
         // mode selesai
         if (!$presensi || !$presensi->foto_mulai) {
-            // bersihkan upload yang sudah terlanjur
-            Storage::disk('public')->delete($path);
-
             return back()->with('warning', 'Presensi pulang harus setelah presensi masuk.');
         }
 
         if ($presensi->foto_selesai) {
-            Storage::disk('public')->delete($path);
             return back()->with('warning', 'Presensi pulang sudah tercatat untuk siswa ini.');
         }
 
+        if ($now->lt($jamSelesaiJadwal)) {
+            return back()->with('warning', 'Belum waktunya presensi pulang. Pulang hanya bisa setelah jam selesai mengajar pada jadwal ('.$jamSelesaiJadwal->format('H:i').' WIB).');
+        }
+
+        if ($now->gt($batasAkhirSesi)) {
+            return back()->with('warning', 'Waktu presensi pulang untuk jadwal ini sudah lewat.');
+        }
+
+        $path = $request->file('foto')->store($dir, 'public');
         $presensi->foto_selesai = $path;
         $presensi->lokasi_selesai = $validated['lokasi'] ?? null;
-        $presensi->status = 'hadir';
+        $presensi->status = ($presensi->status === 'alpha') ? 'alpha' : 'hadir';
         $presensi->save();
+
+        $msgSelesai = $presensi->status === 'alpha'
+            ? 'Presensi pulang tercatat. Status tetap Alpha karena terlambat saat masuk.'
+            : 'Presensi pulang berhasil disimpan.';
 
         return redirect()
             ->route('tutor.presensi')
-            ->with('success', 'Presensi pulang berhasil disimpan.');
+            ->with('success', $msgSelesai);
     }
 }
 

@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('nik', 20)->unique();
             $table->string('nama_lengkap');
+            $table->string('email')->nullable()->unique();
             $table->string('password');
             $table->enum('role', ['admin', 'tutor', 'kepala_sekolah']);
             $table->string('no_hp')->nullable();

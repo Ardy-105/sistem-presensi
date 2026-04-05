@@ -56,10 +56,10 @@
                         <a href="{{ route('admin.kelas.create') }}" style="font-weight:900;color:#1d4ed8;text-decoration:underline;">Tambah kelas sekarang</a>.
                     </div>
                 @endif
-                <select class="input" name="kelas" required>
+                <select class="input" name="kelas_id" required>
                     <option value="">-- Pilih Kelas --</option>
                     @foreach ($kelas as $k)
-                        <option value="{{ $k->id }}" {{ old('kelas') == $k->id ? 'selected' : '' }}>
+                        <option value="{{ $k->id }}" {{ old('kelas_id') == $k->id ? 'selected' : '' }}>
                             {{ $k->nama_kelas }}
                         </option>
                     @endforeach

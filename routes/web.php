@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\KelasController;
 use App\Http\Controllers\Admin\JadwalController;
 use App\Http\Controllers\Admin\TutorController;
 use App\Http\Controllers\Admin\LaporanController;
+use App\Http\Controllers\Tutor\TutorDashboardController;
 
 Route::get('/', function () {
     return view('auth.login');
@@ -36,7 +37,9 @@ Route::patch('karyawan/{id}/status', [KaryawanController::class, 'status'])->nam
 });
 
 Route::middleware(['auth', 'role:tutor'])->prefix('tutor')->name('tutor.')->group(function () {
-    Route::view('/dashboard', 'tutor.dashboard')->name('dashboard');
+    Route::get('/dashboard', [TutorDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/riwayat', [TutorDashboardController::class, 'riwayat'])->name('riwayat');
+    Route::get('/jadwal', [TutorDashboardController::class, 'jadwal'])->name('jadwal');
     Route::get('/presensi', [\App\Http\Controllers\Tutor\PresensiFotoController::class, 'index'])->name('presensi');
     Route::post('/presensi', [\App\Http\Controllers\Tutor\PresensiFotoController::class, 'store'])->name('presensi.store');
 });

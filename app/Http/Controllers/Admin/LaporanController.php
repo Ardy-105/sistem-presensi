@@ -20,17 +20,16 @@ class LaporanController extends Controller
         $endDate   = $startDate->copy()->endOfMonth();
 
         $hasStatus = Schema::hasColumn('presensis', 'status');
-        $hasJamIn = Schema::hasColumn('presensis', 'jam_in');
         $hasJamMulai = Schema::hasColumn('presensis', 'jam_mulai');
         $baseQuery = Presensi::whereBetween('tgl_presensi', [$startDate, $endDate]);
 
-        // Kompatibel dengan 2 skema DB: pakai status jika ada, fallback ke jam_in/jam_mulai.
+        // Kompatibel dengan 2 skema DB: pakai status jika ada, fallback ke jam_mulai.
         if ($hasStatus) {
             $totalHadir = (clone $baseQuery)->where('status', 'hadir')->count();
             $totalIzin = (clone $baseQuery)->where('status', 'izin')->count();
             $totalAlpha = (clone $baseQuery)->where('status', 'alpha')->count();
         } else {
-            $hadirColumn = $hasJamIn ? 'jam_in' : ($hasJamMulai ? 'jam_mulai' : null);
+            $hadirColumn = $hasJamMulai ? 'jam_mulai' : null;
             $totalHadir = $hadirColumn ? (clone $baseQuery)->whereNotNull($hadirColumn)->count() : 0;
             $totalIzin = 0;
             $totalAlpha = max((clone $baseQuery)->count() - $totalHadir, 0);
@@ -49,12 +48,12 @@ class LaporanController extends Controller
             ->orderByDesc('tgl_presensi')
             ->limit(20)
             ->get()
-            ->map(function (Presensi $p) use ($hasStatus, $hasJamIn, $hasJamMulai) {
+            ->map(function (Presensi $p) use ($hasStatus, $hasJamMulai) {
                 if ($hasStatus) {
                     return $p;
                 }
 
-                $hadirValue = $hasJamIn ? $p->jam_in : ($hasJamMulai ? $p->jam_mulai : null);
+                $hadirValue = $hasJamMulai ? $p->jam_mulai : null;
                 $p->status = $hadirValue ? 'hadir' : 'alpha';
                 return $p;
             });
@@ -65,8 +64,6 @@ class LaporanController extends Controller
 
         if ($hasStatus) {
             $dailyQuery->where('status', 'hadir');
-        } elseif ($hasJamIn) {
-            $dailyQuery->whereNotNull('jam_in');
         } elseif ($hasJamMulai) {
             $dailyQuery->whereNotNull('jam_mulai');
         } else {

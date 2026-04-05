@@ -212,6 +212,7 @@
         .pill.izin      { background: rgba(245,158,11,0.15);  color: #d97706; border-color: rgba(245,158,11,0.2);  }
         .pill.terlambat { background: rgba(100,116,139,0.12); color: #475569; border-color: rgba(100,116,139,0.2); }
         .pill.pending   { background: rgba(100,116,139,0.10); color: #64748b; border-color: rgba(100,116,139,0.18);}
+        .pill.alpha     { background: rgba(239,68,68,0.12);   color: #b91c1c; border-color: rgba(239,68,68,0.22);   }
 
         .detailBtn {
             font-size: 11px; font-weight: 900; padding: 7px 10px;

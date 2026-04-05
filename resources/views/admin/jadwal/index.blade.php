@@ -324,7 +324,7 @@
                 </div>
 
                 <div class="scheduleSubject">
-                    {{ $tutorName }}
+                    {{ $jadwal->mata_pelajaran ?? '—' }}
                 </div>
 
                 <div class="scheduleMeta">
@@ -340,6 +340,19 @@
                     <div class="scheduleMetaRow">
                         <ion-icon name="calendar-outline"></ion-icon>
                         <span class="metaText">{{ \Carbon\Carbon::parse($jadwal->tanggal)->translatedFormat('d F Y') }}</span>
+                    </div>
+                    <div class="scheduleMetaRow">
+                        <ion-icon name="location-outline"></ion-icon>
+                        <span class="metaText" style="flex:1;min-width:0;">
+                            @if(($jadwal->lokasi_tipe ?? 'sekolah') === 'rumah_siswa')
+                                <span class="metaHighlight">Rumah siswa</span>
+                            @else
+                                <span class="metaHighlight">Sekolah</span>
+                            @endif
+                            @if($url = $jadwal->lokasiPetaUrl())
+                                <a href="{{ $url }}" target="_blank" rel="noopener" style="display:block;margin-top:4px;font-size:11px;color:#2563eb;font-weight:800;">Buka di Maps</a>
+                            @endif
+                        </span>
                     </div>
                 </div>
             </div>

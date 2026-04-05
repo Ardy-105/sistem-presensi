@@ -12,7 +12,7 @@ class DashboardController extends Controller
     {
         $today = Carbon::now()->toDateString();
 
-        // Hitung berdasarkan jam_in
+        // Hitung berdasarkan jam_mulai
         $counts = [
             'hadir' => $this->countHadir($today),
             'izin' => 0, //izin via WA
@@ -44,11 +44,13 @@ class DashboardController extends Controller
             ->get()
             ->map(function (Presensi $p) {
 
-                //Logika Status
-                if ($p->jam_in && $p->jam_out) {
+                if ($p->status === 'alpha') {
+                    $p->status_label = 'ALPHA';
+                    $p->status_class = 'alpha';
+                } elseif ($p->foto_mulai && $p->foto_selesai) {
                     $p->status_label = 'SELESAI';
                     $p->status_class = 'hadir';
-                } elseif ($p->jam_in) {
+                } elseif ($p->foto_mulai) {
                     $p->status_label = 'SEDANG BERJALAN';
                     $p->status_class = 'izin';
                 } else {
@@ -70,11 +72,11 @@ class DashboardController extends Controller
         ]);
     }
 
-    // Hitung "hadir" berdasarkan jam_in (bukan status).
+    // Hitung "hadir" berdasarkan jam_mulai (bukan status).
     private function countHadir(string $date): int
     {
         return Presensi::whereDate('tgl_presensi', $date)
-            ->whereNotNull('jam_in')
+            ->whereNotNull('jam_mulai')
             ->count();
     }
 }

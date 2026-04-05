@@ -15,9 +15,11 @@ return new class extends Migration
             $table->id();
             $table->foreignId('tutor_id')->constrained()->onDelete('cascade');
             $table->foreignId('siswa_id')->constrained()->onDelete('cascade');
+            $table->string('mata_pelajaran', 100);
             $table->date('tanggal');
             $table->time('jam_mulai');
             $table->time('jam_selesai');
+            $table->string('lokasi_tipe', 20)->default('sekolah');
             $table->timestamps();
         });
     }

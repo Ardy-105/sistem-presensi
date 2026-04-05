@@ -132,6 +132,37 @@
 
     .errorList ul { margin: 6px 0 0; padding-left: 16px; }
     .errorList ul li { margin-bottom: 3px; }
+
+    .lokasiOption {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 12px 14px;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        margin-bottom: 10px;
+        cursor: pointer;
+        background: #fff;
+    }
+    .lokasiOption:has(input:checked) {
+        border-color: #2563eb;
+        background: rgba(37,99,235,0.04);
+    }
+    .lokasiOption input { margin-top: 3px; flex-shrink: 0; }
+    .lokasiOptionText strong { display: block; font-size: 13px; color: #0f172a; }
+    .lokasiOptionText span { font-size: 12px; color: #64748b; line-height: 1.4; margin-top: 4px; display: block; }
+    .lokasiHint {
+        font-size: 11px;
+        color: #64748b;
+        margin-top: 8px;
+        padding: 10px 12px;
+        background: #f8fafc;
+        border-radius: 10px;
+        line-height: 1.45;
+    }
+    .lokasiHint a { color: #2563eb; word-break: break-all; }
+    #siswaAlamatPreview { display: none; margin-top: 8px; }
+    #siswaAlamatPreview.visible { display: block; }
 </style>
 
 @section('content')
@@ -167,7 +198,7 @@
                     @foreach($tutors as $tutor)
                         <option value="{{ $tutor->id }}"
                             {{ old('tutor_id', $jadwal->tutor_id) == $tutor->id ? 'selected' : '' }}>
-                            {{ $tutor->nama_lengkap }}
+                            {{ $tutor->user?->nama_lengkap ?? 'Tutor tidak tersedia' }}
                         </option>
                     @endforeach
                 </select>
@@ -178,16 +209,44 @@
 
             <div class="formGroup">
                 <label class="formLabel">Siswa</label>
-                <select name="siswa_id" class="formControl select" required>
+                <select name="siswa_id" id="siswaSelect" class="formControl select" required>
                     <option value="">— Pilih Siswa —</option>
                     @foreach($siswas as $siswa)
                         <option value="{{ $siswa->id }}"
+                            data-alamat="{{ e($siswa->alamat ?? '') }}"
                             {{ old('siswa_id', $jadwal->siswa_id) == $siswa->id ? 'selected' : '' }}>
                             {{ $siswa->nama_siswa }}
                         </option>
                     @endforeach
                 </select>
                 @error('siswa_id')
+                    <span class="errorMsg">{{ $message }}</span>
+                @enderror
+                <div class="lokasiHint" id="siswaAlamatPreview"></div>
+            </div>
+
+            @php $lt = old('lokasi_tipe', $jadwal->lokasi_tipe ?? 'sekolah'); @endphp
+            <div class="formGroup">
+                <label class="formLabel">Lokasi mengajar</label>
+                <label class="lokasiOption">
+                    <input type="radio" name="lokasi_tipe" value="sekolah" {{ $lt === 'sekolah' ? 'checked' : '' }} required>
+                    <span class="lokasiOptionText">
+                        <strong>Di sekolah</strong>
+                        <span>Alamat tetap sekolah (peta Google Maps yang dikonfigurasi sistem).</span>
+                    </span>
+                </label>
+                <div class="lokasiHint">
+                    Peta sekolah:
+                    <a href="{{ config('lokasi.sekolah_maps_url') }}" target="_blank" rel="noopener">{{ config('lokasi.sekolah_maps_url') }}</a>
+                </div>
+                <label class="lokasiOption">
+                    <input type="radio" name="lokasi_tipe" value="rumah_siswa" {{ $lt === 'rumah_siswa' ? 'checked' : '' }}>
+                    <span class="lokasiOptionText">
+                        <strong>Di luar / rumah siswa</strong>
+                        <span>Alamat diambil dari field <b>alamat</b> data siswa yang dipilih.</span>
+                    </span>
+                </label>
+                @error('lokasi_tipe')
                     <span class="errorMsg">{{ $message }}</span>
                 @enderror
             </div>
@@ -233,6 +292,27 @@
 
             <button type="submit" class="submitBtn">Perbarui Jadwal</button>
         </form>
+
+        <script>
+            (function () {
+                var sel = document.getElementById('siswaSelect');
+                var prev = document.getElementById('siswaAlamatPreview');
+                if (!sel || !prev) return;
+                function sync() {
+                    var opt = sel.options[sel.selectedIndex];
+                    var alamat = opt ? (opt.getAttribute('data-alamat') || '').trim() : '';
+                    if (!alamat) {
+                        prev.classList.remove('visible');
+                        prev.textContent = '';
+                        return;
+                    }
+                    prev.classList.add('visible');
+                    prev.textContent = 'Alamat siswa (untuk opsi rumah siswa): ' + alamat;
+                }
+                sel.addEventListener('change', sync);
+                sync();
+            })();
+        </script>
 
         <form method="POST" action="{{ route('admin.jadwal.destroy', $jadwal) }}"
               onsubmit="return confirm('Yakin ingin menghapus jadwal ini?')">

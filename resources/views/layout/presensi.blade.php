@@ -569,8 +569,8 @@
 
     <div class="appBottomMenu">
         @php
-            $leftHref = \Illuminate\Support\Facades\Route::has('tutor.presensi')
-                ? route('tutor.presensi')
+            $leftHref = \Illuminate\Support\Facades\Route::has('tutor.riwayat')
+                ? route('tutor.riwayat')
                 : '#';
             $centerHref = \Illuminate\Support\Facades\Route::has('tutor.dashboard')
                 ? route('tutor.dashboard')
@@ -579,11 +579,11 @@
                 ? route('tutor.jadwal')
                 : '#';
             $isCenter = request()->routeIs('tutor.dashboard');
-            $isLeft = request()->routeIs('tutor.presensi*');
-            $isRight = request()->routeIs('tutor.jadwal*');
+            $isLeft = request()->routeIs('tutor.riwayat');
+            $isRight = request()->routeIs('tutor.jadwal');
         @endphp
 
-        <a href="{{ $leftHref }}" class="{{ $isLeft ? 'active' : '' }}" aria-label="Presensi">
+        <a href="{{ $leftHref }}" class="{{ $isLeft ? 'active' : '' }}" aria-label="Riwayat">
             <ion-icon name="{{ $isLeft ? 'time' : 'time-outline' }}"></ion-icon>
         </a>
 
