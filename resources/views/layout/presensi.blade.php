@@ -7,6 +7,13 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#0B5ED7">
     <title>@yield('title', 'Smart Presensi')</title>
+    <link rel="icon" type="image/jpeg" href="{{ asset('assets/img/Logo.jpeg') }}" />
+    <link rel="apple-touch-icon" href="{{ asset('assets/img/Logo.jpeg') }}" />
+
+    <script>
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+    </script>
 
     <style>
         :root {
@@ -23,6 +30,45 @@
             --radius-xl: 18px;
             --radius-lg: 14px;
             --radius-md: 12px;
+
+            --topbar-bg: linear-gradient(180deg, #0b5ed7 0%, #1a73e8 100%);
+            --avatar-bg: #ffedd5;
+            --avatar-text: #9a3412;
+            --icon-btn-bg: rgba(255, 255, 255, 0.18);
+            --icon-btn-border: rgba(255, 255, 255, 0.18);
+            --icon-btn-color: #ffffff;
+            --card-alt: #f8fbff;
+            --card-alt2: #fbfdff;
+            --nav-bg: #ffffff;
+            --nav-icon: #64748b;
+            --nav-active-bg: rgba(11, 94, 215, 0.10);
+            --nav-active-border: rgba(11, 94, 215, 0.16);
+            --input-bg: #ffffff;
+            --pill-pending: rgba(100, 116, 139, 0.10);
+            --pill-pending-border: rgba(100, 116, 139, 0.18);
+            --empty-dashed: rgba(100, 116, 139, 0.35);
+        }
+
+        [data-theme="dark"] {
+            --bg: #0f172a;
+            --text: #f8fafc;
+            --muted: #94a3b8;
+            --card: #1e293b;
+            --border: #334155;
+            --topbar-bg: #1e293b;
+            --avatar-bg: #334155;
+            --avatar-text: #f8fafc;
+            --icon-btn-bg: #334155;
+            --icon-btn-border: #334155;
+            --icon-btn-color: #f8fafc;
+            --card-alt: #0f172a;
+            --card-alt2: #0f172a;
+            --nav-bg: #1e293b;
+            --nav-icon: #64748b;
+            --nav-active-bg: rgba(59, 130, 246, 0.10);
+            --nav-active-border: rgba(59, 130, 246, 0.16);
+            --input-bg: #0f172a;
+            --empty-dashed: rgba(148, 163, 184, 0.35);
         }
 
         * { box-sizing: border-box; }
@@ -44,7 +90,7 @@
         }
 
         .topBar {
-            background: linear-gradient(180deg, #0b5ed7 0%, #1a73e8 100%);
+            background: var(--topbar-bg);
             color: #fff;
             padding: 14px 16px;
             border-bottom-left-radius: var(--radius-xl);
@@ -68,12 +114,12 @@
             width: 44px;
             height: 44px;
             border-radius: 50%;
-            background: #ffedd5;
+            background: var(--avatar-bg);
             display: grid;
             place-items: center;
             font-weight: 800;
-            color: #9a3412;
-            border: 3px solid rgba(255, 255, 255, 0.35);
+            color: var(--avatar-text);
+            border: 3px solid var(--border);
         }
 
         .profileMeta {
@@ -85,6 +131,7 @@
         .profileMeta .name {
             font-size: 13px;
             font-weight: 700;
+            color: var(--text);
         }
 
         .profileMeta .sub {
@@ -96,10 +143,11 @@
             width: 42px;
             height: 42px;
             border-radius: 12px;
-            background: rgba(255, 255, 255, 0.18);
+            background: var(--icon-btn-bg);
             display: grid;
             place-items: center;
-            border: 1px solid rgba(255, 255, 255, 0.18);
+            border: 1px solid var(--icon-btn-border);
+            color: var(--icon-btn-color);
         }
 
         .sectionTitleRow {
@@ -145,7 +193,7 @@
             display: flex;
             flex-direction: column;
             gap: 8px;
-            background: #f8fbff;
+            background: var(--card-alt);
         }
 
         .summaryTop {
@@ -185,7 +233,7 @@
         .cardBox {
             border: 1px solid var(--border);
             border-radius: var(--radius-xl);
-            background: #f8fbff;
+            background: var(--card-alt);
             margin: 0 16px 14px;
             padding: 12px 12px 14px;
         }
@@ -254,10 +302,10 @@
             align-items: center;
             justify-content: space-between;
             gap: 12px;
-            border: 1px solid rgba(229, 231, 235, 0.9);
+            border: 1px solid var(--border);
             border-radius: 16px;
             padding: 12px;
-            background: #fbfdff;
+            background: var(--card-alt2);
             margin-bottom: 10px;
         }
 
@@ -272,11 +320,11 @@
             width: 42px;
             height: 42px;
             border-radius: 50%;
-            background: #ffedd5;
+            background: var(--avatar-bg);
             display: grid;
             place-items: center;
             font-weight: 900;
-            color: #9a3412;
+            color: var(--avatar-text);
             flex-shrink: 0;
         }
 
@@ -318,7 +366,7 @@
         .pill.sakit { background: rgba(239, 68, 68, 0.12); color: #dc2626; border-color: rgba(239, 68, 68, 0.2); }
         .pill.izin { background: rgba(245, 158, 11, 0.15); color: #d97706; border-color: rgba(245, 158, 11, 0.2); }
         .pill.terlambat { background: rgba(100, 116, 139, 0.12); color: #475569; border-color: rgba(100, 116, 139, 0.2); }
-        .pill.pending { background: rgba(100, 116, 139, 0.10); color: #64748b; border-color: rgba(100, 116, 139, 0.18); }
+        .pill.pending { background: var(--pill-pending); color: #64748b; border-color: var(--pill-pending-border); }
 
         .detailBtn {
             font-size: 11px;
@@ -336,7 +384,7 @@
             padding: 14px;
             text-align: center;
             border-radius: 16px;
-            border: 1px dashed rgba(100, 116, 139, 0.35);
+            border: 1px dashed var(--empty-dashed);
             color: var(--muted);
             font-weight: 800;
             font-size: 12px;
@@ -349,8 +397,8 @@
             right: 0;
             margin: 0 auto;
             max-width: 430px;
-            background: #ffffff;
-            border-top: 1px solid rgba(229, 231, 235, 0.9);
+            background: var(--nav-bg);
+            border-top: 1px solid var(--border);
             padding: 10px 14px 14px;
             display: flex;
             justify-content: space-between;
@@ -360,7 +408,7 @@
 
         .appBottomMenu a {
             text-decoration: none;
-            color: #64748b;
+            color: var(--nav-icon);
             display: grid;
             place-items: center;
             width: 52px;
@@ -370,8 +418,8 @@
 
         .appBottomMenu a.active {
             color: var(--blue2);
-            background: rgba(11, 94, 215, 0.10);
-            border: 1px solid rgba(11, 94, 215, 0.16);
+            background: var(--nav-active-bg);
+            border: 1px solid var(--nav-active-border);
         }
 
         .appBottomMenu ion-icon {
@@ -427,7 +475,7 @@
             margin: 0 16px 16px;
             border: 1px solid var(--border);
             border-radius: var(--radius-xl);
-            background: #f8fbff;
+            background: var(--card-alt);
             padding: 14px;
         }
 
@@ -435,17 +483,18 @@
             font-size: 12px;
             font-weight: 900;
             margin-bottom: 6px;
-            color: #334155;
+            color: var(--text);
         }
 
         .input {
             width: 100%;
             padding: 11px 12px;
             border-radius: 14px;
-            border: 1px solid rgba(229, 231, 235, 1);
-            background: #fff;
+            border: 1px solid var(--border);
+            background: var(--input-bg);
             outline: none;
             font-size: 13px;
+            color: var(--text);
         }
 
         .input:focus {
@@ -499,10 +548,10 @@
         }
 
         .siswaCard {
-            border: 1px solid rgba(229, 231, 235, 0.9);
+            border: 1px solid var(--border);
             border-radius: 18px;
             padding: 12px;
-            background: #ffffff;
+            background: var(--card);
         }
 
         .siswaTop {
@@ -584,20 +633,47 @@
         @endphp
 
         <a href="{{ $leftHref }}" class="{{ $isLeft ? 'active' : '' }}" aria-label="Riwayat">
-            <ion-icon name="{{ $isLeft ? 'time' : 'time-outline' }}"></ion-icon>
+            <ion-icon name="{{ $isLeft ? 'time' : 'time-outline' }}">Riwayat</ion-icon>
         </a>
 
         <a href="{{ $centerHref }}" class="{{ $isCenter ? 'active' : '' }}" aria-label="Dashboard">
-            <ion-icon name="{{ $isCenter ? 'grid' : 'grid-outline' }}"></ion-icon>
+            <ion-icon name="{{ $isCenter ? 'grid' : 'grid-outline' }}">Dashboard</ion-icon>
         </a>
 
         <a href="{{ $rightHref }}" class="{{ $isRight ? 'active' : '' }}" aria-label="Jadwal">
-            <ion-icon name="{{ $isRight ? 'calendar' : 'calendar-outline' }}"></ion-icon>
+            <ion-icon name="{{ $isRight ? 'calendar' : 'calendar-outline' }}">Agenda</ion-icon>
         </a>
     </div>
 
     <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const btn = document.getElementById('themeToggleBtn');
+            const icon = document.getElementById('themeToggleIcon');
+            const root = document.documentElement;
+
+            function updateIcon() {
+                if (root.getAttribute('data-theme') === 'dark') {
+                    if (icon) icon.setAttribute('name', 'sunny-outline');
+                } else {
+                    if (icon) icon.setAttribute('name', 'moon-outline');
+                }
+            }
+            updateIcon(); // Call immediately for elements that exist
+
+            if (btn) {
+                btn.addEventListener('click', () => {
+                    const current = root.getAttribute('data-theme');
+                    const next = current === 'dark' ? 'light' : 'dark';
+                    root.setAttribute('data-theme', next);
+                    localStorage.setItem('theme', next);
+                    updateIcon();
+                });
+            }
+        });
+    </script>
 </body>
 </html>
 

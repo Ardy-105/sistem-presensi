@@ -6,13 +6,13 @@
     </div>
 
     @if (session('success'))
-        <div class="errorList" style="border-color: rgba(22,163,74,0.25); background: rgba(22,163,74,0.10); color:#15803d;">
+        <div class="errorList">
             {{ session('success') }}
         </div>
     @endif
 
     @if (session('warning'))
-        <div class="errorList" style="border-color: rgba(245,158,11,0.30); background: rgba(245,158,11,0.12); color:#92400e;">
+        <div class="errorList">
             {{ session('warning') }}
         </div>
     @endif
@@ -22,7 +22,7 @@
             <div class="siswaCard">
                 <div class="siswaTop">
                     <div style="display:flex;align-items:center;gap:12px;">
-                        <div class="activityAvatar" style="background:#dbeafe;color:#1d4ed8;">
+                        <div class="activityAvatar" class="activityAvatar">
                             {{ strtoupper(substr((string) $k->nama_kelas, 0, 1)) }}
                         </div>
                         <div>
@@ -41,7 +41,7 @@
                     <form method="POST" action="{{ route('admin.kelas.destroy', $k) }}" onsubmit="return confirm('Yakin hapus kelas ini?')">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" class="smallBtn delete" style="cursor:pointer;border:1px solid rgba(239,68,68,0.22);background:rgba(239,68,68,0.08);">
+                        <button type="submit" class="smallBtn delete" style="cursor:pointer;">
                             <ion-icon name="trash-outline"></ion-icon>
                             Hapus
                         </button>
@@ -56,4 +56,8 @@
     <div style="padding:0 16px 30px;">
         {{ $kelas->links() }}
     </div>
+
+    <a href="{{ route('admin.kelas.create') }}" class="fabAdd" aria-label="Tambah Kelas">
+        <ion-icon name="add-outline"></ion-icon>
+    </a>
 @endsection

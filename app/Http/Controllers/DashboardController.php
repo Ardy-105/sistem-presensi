@@ -5,17 +5,23 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Presensi;
 use Carbon\Carbon;
+use App\Http\Controllers\Admin\Concerns\ResolvesAdmin;
 
 class DashboardController extends Controller
 {
+    use ResolvesAdmin;
+
     public function index()
     {
+        $this->resolveAdmin();
         $today = Carbon::now()->toDateString();
 
-        // Hitung berdasarkan jam_mulai
+        // Hitung berdasarkan jam_selesai
         $counts = [
             'hadir' => $this->countHadir($today),
-            'izin' => 0, //izin via WA
+            'izin'  => Presensi::where('status', 'izin')
+                            ->whereDate('tgl_presensi', $today)
+                            ->count(),
         ];
 
         // Statistik mingguan (ambil total "hadir" per hari).
@@ -52,6 +58,9 @@ class DashboardController extends Controller
                     $p->status_class = 'hadir';
                 } elseif ($p->foto_mulai) {
                     $p->status_label = 'SEDANG BERJALAN';
+                    $p->status_class = 'pending';
+                } elseif ($p->status === 'izin') {
+                    $p->status_label = 'IZIN';
                     $p->status_class = 'izin';
                 } else {
                     $p->status_label = 'BELUM ABSEN';
@@ -72,11 +81,11 @@ class DashboardController extends Controller
         ]);
     }
 
-    // Hitung "hadir" berdasarkan jam_mulai (bukan status).
+    // Hitung "hadir" berdasarkan jam_selesai (bukan status).
     private function countHadir(string $date): int
     {
         return Presensi::whereDate('tgl_presensi', $date)
-            ->whereNotNull('jam_mulai')
+            ->whereNotNull('jam_selesai')
             ->count();
     }
 }

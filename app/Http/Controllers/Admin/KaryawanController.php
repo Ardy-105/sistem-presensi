@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\File;
 
 class KaryawanController extends Controller
 {
@@ -51,9 +52,10 @@ public function store(Request $request)
 {
     $request->validate([
         'nama_lengkap' => 'required',
-        'nik' => 'required|unique:users',
-        'password' => 'required',
-        'role' => 'required',
+        'nik'          => 'required|unique:users',
+        'password'     => 'required',
+        'role'         => 'required',
+        'foto'         => 'nullable|image|max:2048',
     ]);
 
     $generatedEmail = null;
@@ -64,17 +66,28 @@ public function store(Request $request)
 
     $data = [
         'nama_lengkap' => $request->nama_lengkap,
-        'name' => $request->nama_lengkap, // kompatibel untuk schema default Laravel
-        'nik' => $request->nik,
-        'email' => $generatedEmail,
-        'password' => bcrypt($request->password),
-        'role' => $request->role,
-        'is_active' => 1,
-        'no_hp' => $request->no_hp,
-        // upload foto belum di-handle di controller; tetap jangan kirim field yang belum siap
+        'name'         => $request->nama_lengkap,
+        'nik'          => $request->nik,
+        'email'        => $generatedEmail,
+        'password'     => bcrypt($request->password),
+        'role'         => $request->role,
+        'is_active'    => 1,
+        'no_hp'        => $request->no_hp,
     ];
 
-    // Hapus field yang tidak ada di kolom tabel users (biar kompatibel dengan DB lama)
+    // Upload foto jika ada
+    if ($request->hasFile('foto') && Schema::hasColumn('users', 'foto')) {
+        $uploadDir = public_path('uploads/foto_karyawan');
+        if (!File::exists($uploadDir)) {
+            File::makeDirectory($uploadDir, 0755, true);
+        }
+        $file = $request->file('foto');
+        $filename = 'foto_' . time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+        $file->move($uploadDir, $filename);
+        $data['foto'] = 'uploads/foto_karyawan/' . $filename;
+    }
+
+    // Hapus field yang tidak ada di kolom tabel users
     foreach (array_keys($data) as $key) {
         if (!Schema::hasColumn('users', $key)) {
             unset($data[$key]);
@@ -83,7 +96,7 @@ public function store(Request $request)
 
     User::create($data);
 
-    return redirect()->route('admin.karyawan.index');
+    return redirect()->route('admin.karyawan.index')->with('success', 'Karyawan berhasil ditambahkan.');
 }
 
 public function edit($id)
@@ -94,7 +107,11 @@ public function edit($id)
 
 public function update(Request $request, $id)
 {
-    $data = User::findOrFail($id);
+    $karyawan = User::findOrFail($id);
+
+    $request->validate([
+        'foto' => 'nullable|image|max:2048',
+    ]);
 
     $payload = $request->only(['nama_lengkap', 'nik', 'role', 'no_hp']);
     if ($request->filled('nama_lengkap')) {
@@ -108,15 +125,34 @@ public function update(Request $request, $id)
         $payload['password'] = bcrypt($request->password);
     }
 
+    // Upload foto baru jika ada
+    if ($request->hasFile('foto') && Schema::hasColumn('users', 'foto')) {
+        // Hapus foto lama jika ada
+        if ($karyawan->foto) {
+            $oldPath = public_path($karyawan->foto);
+            if (File::exists($oldPath)) {
+                File::delete($oldPath);
+            }
+        }
+        $uploadDir = public_path('uploads/foto_karyawan');
+        if (!File::exists($uploadDir)) {
+            File::makeDirectory($uploadDir, 0755, true);
+        }
+        $file = $request->file('foto');
+        $filename = 'foto_' . time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+        $file->move($uploadDir, $filename);
+        $payload['foto'] = 'uploads/foto_karyawan/' . $filename;
+    }
+
     foreach (array_keys($payload) as $key) {
         if (!Schema::hasColumn('users', $key)) {
             unset($payload[$key]);
         }
     }
 
-    $data->update($payload);
+    $karyawan->update($payload);
 
-    return redirect()->route('admin.karyawan.index');
+    return redirect()->route('admin.karyawan.index')->with('success', 'Data karyawan berhasil diperbarui.');
 }
 
 public function destroy($id)

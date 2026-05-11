@@ -10,6 +10,7 @@ class Admin extends Model
     protected $fillable =
     [
         'user_id',
+        'nik',
         'nama_lengkap',
         'email',
         'no_hp',

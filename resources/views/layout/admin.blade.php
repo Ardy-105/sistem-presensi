@@ -7,6 +7,13 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#0B5ED7">
     <title>@yield('title', 'Smart Presensi — Admin')</title>
+    <link rel="icon" type="image/jpeg" href="{{ asset('assets/img/Logo.jpeg') }}" />
+    <link rel="apple-touch-icon" href="{{ asset('assets/img/Logo.jpeg') }}" />
+
+    <script>
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+    </script>
 
     <style>
         :root {
@@ -23,6 +30,41 @@
             --radius-xl: 18px;
             --radius-lg: 14px;
             --radius-md: 12px;
+
+            --topbar-bg: #ffffff;
+            --avatar-bg: #ffedd5;
+            --avatar-text: #9a3412;
+            --icon-btn-bg: transparent;
+            --icon-btn-color: #0f172a;
+            --card-alt: #f8fbff;
+            --card-alt2: #fbfdff;
+            --nav-bg: #ffffff;
+            --nav-icon: #94a3b8;
+            --nav-active: #1A73E8;
+            --input-bg: #ffffff;
+            --pill-pending: rgba(100,116,139,0.10);
+            --pill-pending-border: rgba(100,116,139,0.18);
+            --empty-dashed: rgba(100,116,139,0.35);
+        }
+
+        [data-theme="dark"] {
+            --bg: #0f172a;
+            --card: #1e293b;
+            --text: #f8fafc;
+            --muted: #94a3b8;
+            --border: #334155;
+            --topbar-bg: #1e293b;
+            --avatar-bg: #334155;
+            --avatar-text: #f8fafc;
+            --icon-btn-bg: #334155;
+            --icon-btn-color: #f8fafc;
+            --card-alt: #0f172a;
+            --card-alt2: #0f172a;
+            --nav-bg: #1e293b;
+            --nav-icon: #64748b;
+            --nav-active: #60a5fa;
+            --input-bg: #0f172a;
+            --empty-dashed: rgba(148,163,184,0.35);
         }
 
         * { box-sizing: border-box; }
@@ -44,10 +86,10 @@
 
         /* ── Top Bar ── */
         .topBar {
-            background: #ffffff;
+            background: var(--topbar-bg);
             color: var(--text);
             padding: 14px 16px;
-            border-bottom: 1px solid rgba(226, 232, 240, 0.95);
+            border-bottom: 1px solid var(--border);
         }
 
         .topBarRow { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
@@ -57,14 +99,14 @@
         .avatar {
             width: 44px; height: 44px;
             border-radius: 50%;
-            background: #ffedd5;
+            background: var(--avatar-bg);
             display: grid; place-items: center;
-            font-weight: 800; color: #9a3412;
-            border: 3px solid rgba(255,255,255,0.35);
+            font-weight: 800; color: var(--avatar-text);
+            border: 3px solid var(--border);
         }
 
         .profileMeta { display: flex; flex-direction: column; line-height: 1.1; }
-        .profileMeta .name { font-size: 13px; font-weight: 700; }
+        .profileMeta .name { font-size: 13px; font-weight: 700; color: var(--text); }
         .profileMeta .sub  { font-size: 11px; color: var(--muted); }
 
         .topIcons { display: flex; align-items: center; gap: 6px; }
@@ -72,10 +114,10 @@
         .iconBtn {
             width: 36px; height: 36px;
             border-radius: 999px;
-            background: transparent;
+            background: var(--icon-btn-bg);
             display: grid; place-items: center;
             border: none;
-            color: #0f172a;
+            color: var(--icon-btn-color);
             cursor: pointer;
             position: relative;
             padding: 0;
@@ -83,7 +125,7 @@
 
         .iconBtn ion-icon {
             font-size: 20px;
-            color: #0f172a;
+            color: inherit;
         }
 
         .iconBtn::after {
@@ -147,7 +189,7 @@
         .summaryCard {
             border: 1px solid var(--border); border-radius: var(--radius-lg);
             padding: 12px; display: flex; flex-direction: column; gap: 8px;
-            background: #f8fbff;
+            background: var(--card-alt);
         }
 
         .summaryTop { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
@@ -164,7 +206,7 @@
         /* ── Card Box ── */
         .cardBox {
             border: 1px solid var(--border); border-radius: var(--radius-xl);
-            background: #f8fbff; margin: 0 16px 14px; padding: 12px 12px 14px;
+            background: var(--card-alt); margin: 0 16px 14px; padding: 12px 12px 14px;
         }
 
         .cardHeadRow { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 10px; }
@@ -188,16 +230,16 @@
 
         .activityRow {
             display: flex; align-items: center; justify-content: space-between;
-            gap: 12px; border: 1px solid rgba(229,231,235,0.9);
-            border-radius: 16px; padding: 12px; background: #fbfdff; margin-bottom: 10px;
+            gap: 12px; border: 1px solid var(--border);
+            border-radius: 16px; padding: 12px; background: var(--card-alt2); margin-bottom: 10px;
         }
 
         .activityLeft { display: flex; align-items: center; gap: 12px; min-width: 0; }
 
         .activityAvatar {
             width: 42px; height: 42px; border-radius: 50%;
-            background: #ffedd5; display: grid; place-items: center;
-            font-weight: 900; color: #9a3412; flex-shrink: 0;
+            background: var(--avatar-bg); display: grid; place-items: center;
+            font-weight: 900; color: var(--avatar-text); flex-shrink: 0;
         }
 
         .activityName { font-size: 13px; font-weight: 900; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 200px; }
@@ -211,7 +253,7 @@
         .pill.sakit     { background: rgba(239,68,68,0.12);   color: #dc2626; border-color: rgba(239,68,68,0.2);   }
         .pill.izin      { background: rgba(245,158,11,0.15);  color: #d97706; border-color: rgba(245,158,11,0.2);  }
         .pill.terlambat { background: rgba(100,116,139,0.12); color: #475569; border-color: rgba(100,116,139,0.2); }
-        .pill.pending   { background: rgba(100,116,139,0.10); color: #64748b; border-color: rgba(100,116,139,0.18);}
+        .pill.pending   { background: var(--pill-pending); color: #64748b; border-color: var(--pill-pending-border);}
         .pill.alpha     { background: rgba(239,68,68,0.12);   color: #b91c1c; border-color: rgba(239,68,68,0.22);   }
 
         .detailBtn {
@@ -222,7 +264,7 @@
 
         .emptyState {
             margin: 10px 0 20px; padding: 14px; text-align: center;
-            border-radius: 16px; border: 1px dashed rgba(100,116,139,0.35);
+            border-radius: 16px; border: 1px dashed var(--empty-dashed);
             color: var(--muted); font-weight: 800; font-size: 12px;
         }
 
@@ -255,14 +297,14 @@
             font-weight: 900; font-size: 12px; text-decoration: none;
         }
 
-        .formCard { margin: 0 16px 16px; border: 1px solid var(--border); border-radius: var(--radius-xl); background: #f8fbff; padding: 14px; }
+        .formCard { margin: 0 16px 16px; border: 1px solid var(--border); border-radius: var(--radius-xl); background: var(--card-alt); padding: 14px; }
 
-        .fieldLabel { font-size: 12px; font-weight: 900; margin-bottom: 6px; color: #334155; }
+        .fieldLabel { font-size: 12px; font-weight: 900; margin-bottom: 6px; color: var(--text); }
 
         .input {
             width: 100%; padding: 11px 12px;
-            border-radius: 14px; border: 1px solid rgba(229,231,235,1);
-            background: #fff; outline: none; font-size: 13px;
+            border-radius: 14px; border: 1px solid var(--border);
+            background: var(--input-bg); outline: none; font-size: 13px; color: var(--text);
         }
 
         .input:focus { border-color: rgba(11,94,215,0.45); box-shadow: 0 0 0 3px rgba(11,94,215,0.15); }
@@ -276,7 +318,7 @@
         }
 
         .siswaGrid { padding: 0 16px 10px; display: grid; grid-template-columns: 1fr; gap: 10px; }
-        .siswaCard { border: 1px solid rgba(229,231,235,0.9); border-radius: 18px; padding: 12px; background: #ffffff; }
+        .siswaCard { border: 1px solid var(--border); border-radius: 18px; padding: 12px; background: var(--card); }
         .siswaTop { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
         .siswaName { font-weight: 1000; font-size: 14px; margin-top: 2px; }
         .siswaMeta { margin-top: 3px; color: var(--muted); font-size: 11px; font-weight: 900; }
@@ -294,8 +336,8 @@
             bottom: 0; left: 0; right: 0;
             margin: 0 auto;
             max-width: 430px;
-            background: #ffffff;
-            border-top: 1px solid rgba(229,231,235,0.9);
+            background: var(--nav-bg);
+            border-top: 1px solid var(--border);
             padding: 10px 10px 14px;
             display: flex;
             justify-content: space-around;
@@ -305,21 +347,21 @@
 
         .bottomNavAdmin a {
             text-decoration: none;
-            color: #94a3b8;
+            color: var(--nav-icon);
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 3px;
+            gap: 2px;
             font-weight: 700;
-            font-size: 10px;
+            font-size: 9px;
             flex: 1;
-            padding: 4px 0;
+            padding: 4px 2px;
             border-radius: 12px;
             transition: color 0.15s;
         }
 
-        .bottomNavAdmin a ion-icon { font-size: 24px; }
-        .bottomNavAdmin a.active   { color: var(--blue2); }
+        .bottomNavAdmin a ion-icon { font-size: 22px; }
+        .bottomNavAdmin a.active   { color: var(--nav-active); }
     </style>
 </head>
 <body>
@@ -327,18 +369,21 @@
         <div class="topBar">
             <div class="topBarRow">
                 <div class="profileGroup">
-                    <div class="avatar" title="Admin">A</div>
+                    <a href="{{ route('profil.index') }}" style="text-decoration: none;">
+                        @if(auth()->check() && auth()->user()->foto)
+                            <img src="{{ str_starts_with(auth()->user()->foto, 'uploads/') ? asset(auth()->user()->foto) : asset('storage/' . auth()->user()->foto) }}" class="avatar" alt="Avatar" style="object-fit:cover;" />
+                        @else
+                            <div class="avatar" title="Admin">{{ strtoupper(substr(auth()->user()->name ?? 'A', 0, 1)) }}</div>
+                        @endif
+                    </a>
                     <div class="profileMeta">
                         <div class="name">Admin PKBM</div>
                         <div class="sub">Pintar Presence System</div>
                     </div>
                 </div>
                 <div class="topIcons">
-                    <button class="iconBtn iconBtn--notify" aria-label="Notifikasi">
-                        <ion-icon name="notifications-outline"></ion-icon>
-                    </button>
-                    <button class="iconBtn iconBtn--search" aria-label="Cari">
-                        <ion-icon name="search-outline"></ion-icon>
+                    <button class="iconBtn" type="button" aria-label="Tema" id="themeToggleBtn">
+                        <ion-icon name="moon-outline" id="themeToggleIcon"></ion-icon>
                     </button>
                 </div>
             </div>
@@ -357,40 +402,80 @@
     {{--  Top Header  --}}
 
 
-    {{-- ── Bottom Nav Admin (sesuai foto) ── --}}
+    {{-- ── Bottom Nav Admin ── --}}
     <nav class="bottomNavAdmin">
         <a href="{{ route('admin.dashboard') }}"
            class="{{ request()->routeIs('admin.dashboard') ? 'active' : '' }}"
            aria-label="Dashboard">
             <ion-icon name="{{ request()->routeIs('admin.dashboard') ? 'grid' : 'grid-outline' }}"></ion-icon>
+            <span>Dashboard</span>
         </a>
 
         <a href="{{ route('admin.karyawan.index') }}"
            class="{{ request()->routeIs('admin.karyawan.*') ? 'active' : '' }}"
            aria-label="Data Karyawan">
             <ion-icon name="{{ request()->routeIs('admin.karyawan.*') ? 'id-card' : 'id-card-outline' }}"></ion-icon>
+            <span>Karyawan</span>
         </a>
 
         <a href="{{ route('admin.siswa.index') }}"
            class="{{ request()->routeIs('admin.siswa.*') ? 'active' : '' }}"
            aria-label="Data Siswa">
             <ion-icon name="{{ request()->routeIs('admin.siswa.*') ? 'school' : 'school-outline' }}"></ion-icon>
+            <span>Siswa</span>
         </a>
 
         <a href="{{ route('admin.jadwal.index') }}"
            class="{{ request()->routeIs('admin.jadwal.*') ? 'active' : '' }}"
            aria-label="Jadwal">
             <ion-icon name="{{ request()->routeIs('admin.jadwal.*') ? 'calendar' : 'calendar-outline' }}"></ion-icon>
+            <span>Agenda</span>
+        </a>
+
+        <a href="{{ route('admin.izin.index') }}"
+           class="{{ request()->routeIs('admin.izin.*') ? 'active' : '' }}"
+           aria-label="Izin Tutor">
+            <ion-icon name="{{ request()->routeIs('admin.izin.*') ? 'shield-checkmark' : 'shield-checkmark-outline' }}"></ion-icon>
+            <span>Izin</span>
         </a>
 
         <a href="{{ route('admin.laporan.index') }}"
            class="{{ request()->routeIs('admin.laporan.*') ? 'active' : '' }}"
            aria-label="Laporan">
             <ion-icon name="{{ request()->routeIs('admin.laporan.*') ? 'bar-chart' : 'bar-chart-outline' }}"></ion-icon>
+            <span>Laporan</span>
         </a>
     </nav>
 
     <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
+    @stack('scripts')
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const btn = document.getElementById('themeToggleBtn');
+            const icon = document.getElementById('themeToggleIcon');
+            const root = document.documentElement;
+
+            function updateIcon() {
+                if (root.getAttribute('data-theme') === 'dark') {
+                    if (icon) icon.setAttribute('name', 'sunny-outline');
+                } else {
+                    if (icon) icon.setAttribute('name', 'moon-outline');
+                }
+            }
+            updateIcon();
+
+            if (btn) {
+                btn.addEventListener('click', () => {
+                    const current = root.getAttribute('data-theme');
+                    const next = current === 'dark' ? 'light' : 'dark';
+                    root.setAttribute('data-theme', next);
+                    localStorage.setItem('theme', next);
+                    updateIcon();
+                });
+            }
+        });
+    </script>
 </body>
 </html>

@@ -52,13 +52,14 @@
             <div class="formRow">
                 <div class="fieldLabel">Kelas</div>
                 @if ($kelas->isEmpty())
-                    <div class="input" style="border: 1px solid #ccc; background:#fff7e6; color:#8a6d3b;">
+                    <div class="input" style="border: 1px solid #ccc; ">
                         Belum ada data kelas.
                         <a href="{{ route('admin.kelas.create') }}" style="font-weight:900;color:#1d4ed8;text-decoration:underline;">Tambah kelas sekarang</a>.
                     </div>
                 @endif
-                <select class="input" name="kelas_id">
+                <select class="input" name="kelas_id" onchange="if(this.value === 'tambah_kelas') { window.location.href = '{{ route('admin.kelas.create') }}'; }">
                     <option value="">-- Pilih Kelas --</option>
+                    <option value="tambah_kelas" style="font-weight: bold; color: #1d4ed8;">+ Tambah Kelas</option>
                     @foreach ($kelas as $k)
                         <option value="{{ $k->id }}" {{ (int) old('kelas_id', $siswa->kelas_id) === (int) $k->id ? 'selected' : '' }}>
                             {{ $k->nama_kelas }}

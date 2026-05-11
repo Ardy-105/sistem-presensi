@@ -1,6 +1,6 @@
 @extends('layout.admin')
 
-@section('title', 'Edit Jadwal — Admin')
+@section('title', 'Edit Agenda — Admin')
 
 <style>
     .formPage {
@@ -43,7 +43,7 @@
         display: block;
         font-size: 12px;
         font-weight: 600;
-        color: #64748b;
+        color: var(--muted);
         letter-spacing: 0.5px;
         margin-bottom: 7px;
         text-transform: uppercase;
@@ -69,20 +69,10 @@
         box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
     }
 
-    .formControl.select {
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
-        background-repeat: no-repeat;
-        background-position: right 14px center;
-        background-size: 16px;
-        padding-right: 40px;
+    textarea.formControl {
+        resize: vertical;
+        min-height: 90px;
     }
-
-    .timeRow {
-        display: flex;
-        gap: 10px;
-    }
-
-    .timeRow .formGroup { flex: 1; }
 
     .errorMsg {
         font-size: 11px;
@@ -105,6 +95,8 @@
         font-family: inherit;
         box-shadow: 0 4px 14px rgba(26,58,92,0.3);
     }
+
+    .submitBtn:active { opacity: 0.9; }
 
     .deleteBtn {
         width: 100%;
@@ -132,37 +124,6 @@
 
     .errorList ul { margin: 6px 0 0; padding-left: 16px; }
     .errorList ul li { margin-bottom: 3px; }
-
-    .lokasiOption {
-        display: flex;
-        align-items: flex-start;
-        gap: 10px;
-        padding: 12px 14px;
-        border-radius: 12px;
-        border: 1px solid #e2e8f0;
-        margin-bottom: 10px;
-        cursor: pointer;
-        background: #fff;
-    }
-    .lokasiOption:has(input:checked) {
-        border-color: #2563eb;
-        background: rgba(37,99,235,0.04);
-    }
-    .lokasiOption input { margin-top: 3px; flex-shrink: 0; }
-    .lokasiOptionText strong { display: block; font-size: 13px; color: #0f172a; }
-    .lokasiOptionText span { font-size: 12px; color: #64748b; line-height: 1.4; margin-top: 4px; display: block; }
-    .lokasiHint {
-        font-size: 11px;
-        color: #64748b;
-        margin-top: 8px;
-        padding: 10px 12px;
-        background: #f8fafc;
-        border-radius: 10px;
-        line-height: 1.45;
-    }
-    .lokasiHint a { color: #2563eb; word-break: break-all; }
-    #siswaAlamatPreview { display: none; margin-top: 8px; }
-    #siswaAlamatPreview.visible { display: block; }
 </style>
 
 @section('content')
@@ -171,7 +132,7 @@
         <a href="{{ route('admin.jadwal.index', ['tanggal' => $jadwal->tanggal]) }}" class="backBtn">
             <ion-icon name="arrow-back-outline"></ion-icon>
         </a>
-        <div class="formPageTitle">Edit Jadwal</div>
+        <div class="formPageTitle">Edit Agenda</div>
     </div>
 
     <div class="formPage">
@@ -191,75 +152,27 @@
             @csrf
             @method('PUT')
 
+            {{-- Judul --}}
             <div class="formGroup">
-                <label class="formLabel">Tutor</label>
-                <select name="tutor_id" class="formControl select" required>
-                    <option value="">— Pilih Tutor —</option>
-                    @foreach($tutors as $tutor)
-                        <option value="{{ $tutor->id }}"
-                            {{ old('tutor_id', $jadwal->tutor_id) == $tutor->id ? 'selected' : '' }}>
-                            {{ $tutor->user?->nama_lengkap ?? 'Tutor tidak tersedia' }}
-                        </option>
-                    @endforeach
-                </select>
-                @error('tutor_id')
+                <label class="formLabel">Judul Agenda</label>
+                <input type="text" name="judul" class="formControl"
+                       value="{{ old('judul', $jadwal->judul) }}" placeholder="Contoh: Rapat Wali Murid" required>
+                @error('judul')
                     <span class="errorMsg">{{ $message }}</span>
                 @enderror
             </div>
 
+            {{-- Deskripsi --}}
             <div class="formGroup">
-                <label class="formLabel">Siswa</label>
-                <select name="siswa_id" id="siswaSelect" class="formControl select" required>
-                    <option value="">— Pilih Siswa —</option>
-                    @foreach($siswas as $siswa)
-                        <option value="{{ $siswa->id }}"
-                            data-alamat="{{ e($siswa->alamat ?? '') }}"
-                            {{ old('siswa_id', $jadwal->siswa_id) == $siswa->id ? 'selected' : '' }}>
-                            {{ $siswa->nama_siswa }}
-                        </option>
-                    @endforeach
-                </select>
-                @error('siswa_id')
-                    <span class="errorMsg">{{ $message }}</span>
-                @enderror
-                <div class="lokasiHint" id="siswaAlamatPreview"></div>
-            </div>
-
-            @php $lt = old('lokasi_tipe', $jadwal->lokasi_tipe ?? 'sekolah'); @endphp
-            <div class="formGroup">
-                <label class="formLabel">Lokasi mengajar</label>
-                <label class="lokasiOption">
-                    <input type="radio" name="lokasi_tipe" value="sekolah" {{ $lt === 'sekolah' ? 'checked' : '' }} required>
-                    <span class="lokasiOptionText">
-                        <strong>Di sekolah</strong>
-                        <span>Alamat tetap sekolah (peta Google Maps yang dikonfigurasi sistem).</span>
-                    </span>
-                </label>
-                <div class="lokasiHint">
-                    Peta sekolah:
-                    <a href="{{ config('lokasi.sekolah_maps_url') }}" target="_blank" rel="noopener">{{ config('lokasi.sekolah_maps_url') }}</a>
-                </div>
-                <label class="lokasiOption">
-                    <input type="radio" name="lokasi_tipe" value="rumah_siswa" {{ $lt === 'rumah_siswa' ? 'checked' : '' }}>
-                    <span class="lokasiOptionText">
-                        <strong>Di luar / rumah siswa</strong>
-                        <span>Alamat diambil dari field <b>alamat</b> data siswa yang dipilih.</span>
-                    </span>
-                </label>
-                @error('lokasi_tipe')
+                <label class="formLabel">Deskripsi <span style="font-weight:400;text-transform:none;">(opsional)</span></label>
+                <textarea name="deskripsi" class="formControl"
+                          placeholder="Keterangan tambahan tentang agenda ini...">{{ old('deskripsi', $jadwal->deskripsi) }}</textarea>
+                @error('deskripsi')
                     <span class="errorMsg">{{ $message }}</span>
                 @enderror
             </div>
 
-            <div class="formGroup">
-                <label class="formLabel">Mata Pelajaran</label>
-                <input type="text" name="mata_pelajaran" class="formControl"
-                       value="{{ old('mata_pelajaran', $jadwal->mata_pelajaran) }}" placeholder="Contoh: Matematika" required>
-                @error('mata_pelajaran')
-                    <span class="errorMsg">{{ $message }}</span>
-                @enderror
-            </div>
-
+            {{-- Tanggal --}}
             <div class="formGroup">
                 <label class="formLabel">Tanggal</label>
                 <input type="date" name="tanggal" class="formControl"
@@ -269,58 +182,26 @@
                 @enderror
             </div>
 
-            <div class="timeRow">
-                <div class="formGroup">
-                    <label class="formLabel">Jam Mulai</label>
-                    <input type="time" name="jam_mulai" class="formControl"
-                           value="{{ old('jam_mulai', \Carbon\Carbon::parse($jadwal->jam_mulai)->format('H:i')) }}"
-                           required>
-                    @error('jam_mulai')
-                        <span class="errorMsg">{{ $message }}</span>
-                    @enderror
-                </div>
-                <div class="formGroup">
-                    <label class="formLabel">Jam Selesai</label>
-                    <input type="time" name="jam_selesai" class="formControl"
-                           value="{{ old('jam_selesai', \Carbon\Carbon::parse($jadwal->jam_selesai)->format('H:i')) }}"
-                           required>
-                    @error('jam_selesai')
-                        <span class="errorMsg">{{ $message }}</span>
-                    @enderror
-                </div>
+            {{-- Lokasi --}}
+            <div class="formGroup">
+                <label class="formLabel">Lokasi <span style="font-weight:400;text-transform:none;">(opsional)</span></label>
+                <input type="text" name="lokasi" class="formControl"
+                       value="{{ old('lokasi', $jadwal->lokasi) }}" placeholder="Contoh: Ruang Aula, Online, dll.">
+                @error('lokasi')
+                    <span class="errorMsg">{{ $message }}</span>
+                @enderror
             </div>
 
-            <button type="submit" class="submitBtn">Perbarui Jadwal</button>
+            <button type="submit" class="submitBtn">Perbarui Agenda</button>
         </form>
 
-        <script>
-            (function () {
-                var sel = document.getElementById('siswaSelect');
-                var prev = document.getElementById('siswaAlamatPreview');
-                if (!sel || !prev) return;
-                function sync() {
-                    var opt = sel.options[sel.selectedIndex];
-                    var alamat = opt ? (opt.getAttribute('data-alamat') || '').trim() : '';
-                    if (!alamat) {
-                        prev.classList.remove('visible');
-                        prev.textContent = '';
-                        return;
-                    }
-                    prev.classList.add('visible');
-                    prev.textContent = 'Alamat siswa (untuk opsi rumah siswa): ' + alamat;
-                }
-                sel.addEventListener('change', sync);
-                sync();
-            })();
-        </script>
-
         <form method="POST" action="{{ route('admin.jadwal.destroy', $jadwal) }}"
-              onsubmit="return confirm('Yakin ingin menghapus jadwal ini?')">
+              onsubmit="return confirm('Yakin ingin menghapus agenda ini?')">
             @csrf
             @method('DELETE')
             <button type="submit" class="deleteBtn">
                 <ion-icon name="trash-outline" style="vertical-align:middle;margin-right:4px;"></ion-icon>
-                Hapus Jadwal
+                Hapus Agenda
             </button>
         </form>
     </div>

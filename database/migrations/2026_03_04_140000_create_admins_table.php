@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('admins', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->string('nik', 20)->unique()->nullable();
             $table->string('nama_lengkap', 50);
             $table->string('email')->unique();
             $table->string('no_hp')->nullable();

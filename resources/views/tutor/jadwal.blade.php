@@ -9,44 +9,45 @@
     $initial = strtoupper(substr($displayName, 0, 1));
 
     use Carbon\Carbon;
-    $todayDate = Carbon::today();
+    $todayDate = Carbon::today('Asia/Jakarta');
+    $selectedDate = $selectedDate ?? Carbon::parse(request('tanggal', $todayDate->toDateString()))->startOfDay();
 
-    // generate 7 hari (calendar horizontal)
+    // generate 7 hari (calendar horizontal) mulai dari hari ini
     $dates = [];
-    for ($i = -3; $i <= 3; $i++) {
+    for ($i = 0; $i <= 6; $i++) {
         $dates[] = $todayDate->copy()->addDays($i);
     }
 @endphp
 
 <style>
 body {
-    background: #f3f4f6;
+    background: var(--bg);
 }
 
 /* HEADER */
 .tutorTop {
-        background: #f3f4f6;
+        background: var(--card-alt);
         padding: 12px 14px;
-        border-bottom: 1px solid rgba(226,232,240,0.9);
+        border-bottom: 1px solid var(--border);
     }
     .tutorTopRow { display:flex; align-items:center; justify-content:space-between; gap:12px; }
     .tutorLeft { display:flex; align-items:center; gap:10px; min-width:0; }
     .tutorAvatar {
         width: 42px; height: 42px; border-radius: 50%;
-        background: #111827; color: #fff;
+        background: var(--text); color: var(--card);
         display:grid; place-items:center; font-weight: 900;
         overflow: hidden;
     }
     .tutorMeta { min-width:0; }
-    .tutorName { font-size: 13px; font-weight: 900; color:#0f172a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    .tutorSub { font-size: 11px; color:#64748b; font-weight: 700; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .tutorName { font-size: 13px; font-weight: 900; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .tutorSub { font-size: 11px; color:var(--muted); font-weight: 700; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .tutorIconBtn {
         width: 36px; height: 36px;
         border-radius: 999px;
         border: none;
-        background: rgba(15,23,42,0.06);
+        background: var(--icon-btn-bg);
         display:grid; place-items:center;
-        color:#0f172a;
+        color:var(--text);
         cursor:pointer;
     }
 
@@ -137,64 +138,69 @@ body {
 <div class="tutorTop">
     <div class="tutorTopRow">
         <div class="tutorLeft">
-            <div class="tutorAvatar" aria-label="Avatar">{{ $initial }}</div>
+            <a href="{{ route('profil.index') }}" style="text-decoration: none;">
+                @if(auth()->user()->foto)
+                    <img src="{{ str_starts_with(auth()->user()->foto, 'uploads/') ? asset(auth()->user()->foto) : asset('storage/' . auth()->user()->foto) }}" class="tutorAvatar" alt="Avatar" style="object-fit:cover;" />
+                @else
+                    <div class="tutorAvatar" aria-label="Avatar">{{ $initial }}</div>
+                @endif
+            </a>
             <div class="tutorMeta">
                 <div class="tutorName">{{ $displayName }}</div>
                 <div class="tutorSub">Tutor</div>
             </div>
         </div>
-        <button class="tutorIconBtn" type="button" aria-label="Tema">
-            <ion-icon name="moon-outline" style="font-size:20px;"></ion-icon>
+        <button class="tutorIconBtn" type="button" aria-label="Tema" id="themeToggleBtn">
+            <ion-icon name="moon-outline" style="font-size:20px;" id="themeToggleIcon"></ion-icon>
         </button>
     </div>
 </div>
 
 <div class="agendaTitle">Agenda Kegiatan</div>
-<div class="agendaSub">{{ $todayDate->translatedFormat('F Y') }}</div>
+<div class="agendaSub">{{ $selectedDate->translatedFormat('F Y') }}</div>
 
 <!-- CALENDAR HORIZONTAL -->
 <div class="calendar">
     @foreach($dates as $d)
-        <div class="calItem {{ $d->isToday() ? 'active' : '' }}">
-            <div>{{ strtoupper($d->translatedFormat('D')) }}</div>
-            <div class="date">{{ $d->format('d') }}</div>
-        </div>
+        <a href="{{ route('tutor.jadwal', ['tanggal' => $d->toDateString()]) }}" style="text-decoration:none; color:inherit;">
+            <div class="calItem {{ $d->isSameDay($selectedDate) ? 'active' : '' }}">
+                <div>{{ strtoupper($d->translatedFormat('D')) }}</div>
+                <div class="date">{{ $d->format('d') }}</div>
+            </div>
+        </a>
     @endforeach
 </div>
 
 <!-- LIST AGENDA -->
 @forelse($items as $j)
     @php
-        $tgl = Carbon::parse($j->tanggal);
-        $jm = substr((string) $j->jam_mulai, 0, 5);
-        $js = substr((string) $j->jam_selesai, 0, 5);
-        $mapel = $j->mata_pelajaran ?? 'Pelajaran';
-        $namaSiswa = $j->siswa->nama_siswa ?? 'Siswa';
-        $isUjian = str_contains(strtolower($mapel), 'ujian');
+        $tgl = $selectedDate->translatedFormat('d F Y');
+        $judul = $j->judul ?? 'Agenda';
+        $deskripsi = $j->deskripsi ?? null;
+        $lokasi = $j->lokasi ?? null;
+        $isToday = $selectedDate->isToday();
     @endphp
 
-    <div class="agendaCard {{ $isUjian ? 'red' : '' }}">
+    <div class="agendaCard" style="{{ $isToday ? 'border-left-color:#16a34a;' : '' }}">
 
         <div>
-            <span class="label {{ $isUjian ? 'red' : '' }}">
-                {{ $isUjian ? 'UJIAN' : 'MENGAJAR' }}
+            <span class="label" style="{{ $isToday ? 'color:#16a34a;' : '' }}">
+                {{ $isToday ? 'HARI INI' : 'AGENDA' }}
             </span>
-
-            <span class="time">
-                {{ $jm }} - {{ $js }}
-            </span>
+            <span class="time">{{ $tgl }}</span>
         </div>
 
-        <div class="title">
-            {{ $mapel }} - {{ $namaSiswa }}
-        </div>
+        <div class="title">{{ $judul }}</div>
 
-        <div class="location">
-            <strong style="color:#374151;">Lokasi:</strong> {{ $j->lokasiRingkasan() }}
-            @if($mapLink = $j->lokasiPetaUrl())
-                <br><a href="{{ $mapLink }}" target="_blank" rel="noopener" style="color:#2563eb;font-weight:800;">Buka di Google Maps</a>
-            @endif
-        </div>
+        @if($deskripsi)
+            <div class="location" style="margin-top:6px;">{{ $deskripsi }}</div>
+        @endif
+
+        @if($lokasi)
+            <div class="location">
+                <strong style="color:#374151;">Lokasi:</strong> {{ $lokasi }}
+            </div>
+        @endif
 
     </div>
 

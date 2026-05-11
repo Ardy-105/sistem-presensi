@@ -20,7 +20,7 @@
     @endif
 
     <div class="formCard">
-        <form method="POST" action="{{ route('admin.karyawan.store') }}">
+        <form method="POST" action="{{ route('admin.karyawan.store') }}" enctype="multipart/form-data">
             @csrf
             <div class="formRow">
                 <div class="fieldLabel">Nama Lengkap</div>

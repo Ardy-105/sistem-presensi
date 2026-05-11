@@ -7,7 +7,7 @@
     </div>
 
     @if (session('success'))
-        <div class="errorList" style="border-color: rgba(22,163,74,0.25); background: rgba(22,163,74,0.10); color:#15803d;">
+        <div class="errorList">
             {{ session('success') }}
         </div>
     @endif
@@ -20,7 +20,7 @@
                         @php
                             $initial = strtoupper(substr((string) ($siswa->nama_siswa ?? ''), 0, 1));
                         @endphp
-                        <div class="activityAvatar" style="background:#ffedd5;">
+                        <div class="activityAvatar" class="activityAvatar">
                             {{ $initial }}
                         </div>
                         <div style="min-width:0;">
@@ -41,7 +41,7 @@
                     <form method="POST" action="{{ route('admin.siswa.destroy', $siswa) }}" onsubmit="return confirm('Yakin hapus siswa ini?')">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" class="smallBtn delete" style="cursor:pointer;border:1px solid rgba(239,68,68,0.22);background:rgba(239,68,68,0.08);">
+                        <button type="submit" class="smallBtn delete" style="cursor:pointer;">
                             <ion-icon name="trash-outline"></ion-icon>
                             Hapus
                         </button>

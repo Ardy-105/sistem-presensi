@@ -4,11 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Jadwal;
-use App\Models\Tutor;
-use App\Models\Siswa;
-use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Carbon\Carbon;
 
 class JadwalController extends Controller
@@ -18,86 +14,77 @@ class JadwalController extends Controller
         $tanggal = $request->get('tanggal', Carbon::today()->toDateString());
         $selectedDate = Carbon::parse($tanggal);
 
-        // Ambil 7 hari (Senin s.d. Sabtu minggu ini)
-        $monday = $selectedDate->copy()->startOfWeek(Carbon::MONDAY);
-        $weekDays = collect(range(0, 5))->map(fn($i) => $monday->copy()->addDays($i));
+        // Ambil 1 bulan
+        $startOfMonth = $selectedDate->copy()->startOfMonth();
+        $endOfMonth = $selectedDate->copy()->endOfMonth();
+        
+        $monthDays = collect();
+        for ($date = $startOfMonth; $date->lte($endOfMonth); $date->addDay()) {
+            $monthDays->push($date->copy());
+        }
 
-        // Jadwal untuk tanggal yang dipilih
-        $jadwals = Jadwal::with(['tutor', 'siswa'])
-            ->whereDate('tanggal', $selectedDate)
-            ->orderBy('jam_mulai')
+        // Agenda untuk tanggal yang dipilih
+        $jadwals = Jadwal::whereDate('tanggal', $selectedDate)
+            ->orderBy('created_at')
             ->get();
 
-        // Hitung total jadwal per hari dalam minggu ini (untuk dot indicator)
-        $weekCounts = Jadwal::selectRaw('DATE(tanggal) as tgl, COUNT(*) as total')
-            ->whereBetween('tanggal', [$weekDays->first()->toDateString(), $weekDays->last()->toDateString()])
+        // Hitung total agenda per hari dalam 1 bulan
+        $monthCounts = Jadwal::selectRaw('DATE(tanggal) as tgl, COUNT(*) as total')
+            ->whereBetween('tanggal', [$startOfMonth->toDateString(), $endOfMonth->toDateString()])
             ->groupBy('tgl')
             ->pluck('total', 'tgl');
 
-        return view('admin.jadwal.index', compact('jadwals', 'selectedDate', 'weekDays', 'weekCounts'));
+        return view('admin.jadwal.index', compact(
+            'jadwals',
+            'selectedDate',
+            'monthDays',
+            'monthCounts'));
     }
 
     public function create()
     {
-        $this->syncTutorsFromUsers();
-
-        $tutors = Tutor::with('user')->get()->sortBy(fn($tutor) => $tutor->user?->nama_lengkap ?? $tutor->id);
-        $siswas = Siswa::orderBy('nama_siswa')->get();
-        return view('admin.jadwal.create', compact('tutors', 'siswas'));
+        return view('admin.jadwal.create');
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'tutor_id'    => 'required|exists:tutors,id',
-            'siswa_id'    => 'required|exists:siswas,id',
-            'mata_pelajaran' => 'required|string|max:100',
-            'tanggal'     => 'required|date',
-            'jam_mulai'   => 'required',
-            'jam_selesai' => 'required|after:jam_mulai',
-            'lokasi_tipe' => ['required', Rule::in(['sekolah', 'rumah_siswa'])],
+            'judul'    => 'required|string|max:200',
+            'deskripsi' => 'nullable|string|max:1000',
+            'tanggal'  => 'required|date',
+            'lokasi'   => 'nullable|string|max:255',
         ], [
-            'tutor_id.required'    => 'Tutor wajib dipilih.',
-            'siswa_id.required'    => 'Siswa wajib dipilih.',
-            'mata_pelajaran.required' => 'Mata pelajaran wajib diisi.',
-            'tanggal.required'     => 'Tanggal wajib diisi.',
-            'jam_mulai.required'   => 'Jam mulai wajib diisi.',
-            'jam_selesai.required' => 'Jam selesai wajib diisi.',
-            'jam_selesai.after'    => 'Jam selesai harus setelah jam mulai.',
-            'lokasi_tipe.required' => 'Lokasi mengajar wajib dipilih.',
+            'judul.required' => 'Judul agenda wajib diisi.',
+            'tanggal.required' => 'Tanggal wajib diisi.',
         ]);
 
-        Jadwal::create($request->only(['tutor_id', 'siswa_id', 'mata_pelajaran', 'tanggal', 'jam_mulai', 'jam_selesai', 'lokasi_tipe']));
+        Jadwal::create($request->only(['judul', 'deskripsi', 'tanggal', 'lokasi']));
 
         return redirect()->route('admin.jadwal.index', ['tanggal' => $request->tanggal])
-            ->with('success', 'Jadwal berhasil ditambahkan.');
+            ->with('success', 'Agenda berhasil ditambahkan.');
     }
 
     public function edit(Jadwal $jadwal)
     {
-        $this->syncTutorsFromUsers();
-
-        $tutors = Tutor::with('user')->get()->sortBy(fn($tutor) => $tutor->user?->nama_lengkap ?? $tutor->id);
-        $siswas = Siswa::orderBy('nama_siswa')->get();
-        return view('admin.jadwal.edit', compact('jadwal', 'tutors', 'siswas'));
+        return view('admin.jadwal.edit', compact('jadwal'));
     }
 
     public function update(Request $request, Jadwal $jadwal)
     {
         $request->validate([
-            'tutor_id'    => 'required|exists:tutors,id',
-            'siswa_id'    => 'required|exists:siswas,id',
-            'mata_pelajaran' => 'required|string|max:100',
-            'tanggal'     => 'required|date',
-            'jam_mulai'   => 'required',
-            'jam_selesai' => 'required|after:jam_mulai',
-            'lokasi_tipe' => ['required', Rule::in(['sekolah', 'rumah_siswa'])],
+            'judul'    => 'required|string|max:200',
+            'deskripsi' => 'nullable|string|max:1000',
+            'tanggal'  => 'required|date',
+            'lokasi'   => 'nullable|string|max:255',
+        ], [
+            'judul.required' => 'Judul agenda wajib diisi.',
+            'tanggal.required' => 'Tanggal wajib diisi.',
         ]);
 
-        $jadwal->update($request->only(['tutor_id', 'siswa_id', 'mata_pelajaran', 'tanggal', 'jam_mulai', 'jam_selesai', 'lokasi_tipe']));
+        $jadwal->update($request->only(['judul', 'deskripsi', 'tanggal', 'lokasi']));
 
         return redirect()->route('admin.jadwal.index', ['tanggal' => $jadwal->tanggal])
-            ->with('success', 'Jadwal berhasil diperbarui.');
+            ->with('success', 'Agenda berhasil diperbarui.');
     }
 
     public function destroy(Jadwal $jadwal)
@@ -106,25 +93,6 @@ class JadwalController extends Controller
         $jadwal->delete();
 
         return redirect()->route('admin.jadwal.index', ['tanggal' => $tanggal])
-            ->with('success', 'Jadwal berhasil dihapus.');
-    }
-
-    private function syncTutorsFromUsers(): void
-    {
-        $tutorUsers = User::where('role', 'tutor')->get();
-
-        foreach ($tutorUsers as $user) {
-            Tutor::firstOrCreate(
-                ['user_id' => $user->id],
-                [
-                    'nik' => $user->nik,
-                    'nama_lengkap' => $user->nama_lengkap,
-                    'email' => $user->email ?? 'user'.$user->id.'@local.test',
-                    'alamat' => null,
-                    'no_hp' => $user->no_hp,
-                    'foto' => $user->foto ?? null,
-                ]
-            );
-        }
+            ->with('success', 'Agenda berhasil dihapus.');
     }
 }

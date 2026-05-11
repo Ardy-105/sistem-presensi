@@ -52,17 +52,22 @@
             <div class="formRow">
                 <div class="fieldLabel">Foto</div>
                 @if ($karyawan->foto)
-                    <img src="{{ asset('storage/' . $karyawan->foto) }}" alt="Foto {{ $karyawan->nama_lengkap }}"
+                    @php
+                        $fotoEditUrl = str_starts_with($karyawan->foto, 'uploads/')
+                            ? asset($karyawan->foto)
+                            : asset('storage/' . $karyawan->foto);
+                    @endphp
+                    <img src="{{ $fotoEditUrl }}" alt="Foto {{ $karyawan->nama_lengkap }}"
                         style="width:80px;height:80px;object-fit:cover;border-radius:8px;margin-bottom:8px;display:block;" />
                 @endif
                 <input class="input" type="file" name="foto" />
-                <small style="color:#888;">Kosongkan jika tidak ingin mengubah foto.</small>
+                <small style="color: var(--muted);">Kosongkan jika tidak ingin mengubah foto.</small>
             </div>
 
             <div class="formRow">
                 <div class="fieldLabel">Password Baru</div>
                 <input class="input" type="password" name="password" />
-                <small style="color:#888;">Kosongkan jika tidak ingin mengubah password.</small>
+                <small style="color: var(--muted);">Kosongkan jika tidak ingin mengubah password.</small>
             </div>
 
             <div class="formRow">

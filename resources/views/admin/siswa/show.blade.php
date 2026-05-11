@@ -14,7 +14,7 @@
             <div class="activityAvatar" style="width:54px;height:54px;font-size:16px;">{{ $initial }}</div>
             <div>
                 <div style="font-weight:1000;font-size:16px;">{{ $siswa->nama_siswa }}</div>
-                <div style="color:#64748b;font-weight:900;font-size:12px;margin-top:4px;">
+                <div style="color: var(--muted);font-weight:900;font-size:12px;margin-top:4px;">
                     NIS: {{ $siswa->nis }}
                 </div>
             </div>
@@ -25,13 +25,13 @@
             <div style="font-weight:900;">{{ $siswa->relKelas->nama_kelas ?? '-' }}</div>
 
             <div class="fieldLabel" style="margin-top:12px;">Alamat</div>
-            <div style="color:#334155;font-weight:900;">{{ $siswa->alamat ?? '-' }}</div>
+            <div style="color: var(--text);font-weight:900;">{{ $siswa->alamat ?? '-' }}</div>
 
             <div class="fieldLabel" style="margin-top:12px;">No HP</div>
-            <div style="color:#334155;font-weight:900;">{{ $siswa->no_hp }}</div>
+            <div style="color: var(--text);font-weight:900;">{{ $siswa->no_hp }}</div>
 
             <div class="fieldLabel" style="margin-top:12px;">Nama Wali</div>
-            <div style="color:#334155;font-weight:900;">{{ $siswa->nama_wali }}</div>
+            <div style="color: var(--text);font-weight:900;">{{ $siswa->nama_wali }}</div>
         </div>
 
         <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;">

@@ -15,6 +15,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => \App\Http\Middleware\RoleMiddleware::class,
         ]);
+
+        // Exclude login route from CSRF for WebView APK compatibility
+        $middleware->validateCsrfTokens(except: [
+            'login',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
